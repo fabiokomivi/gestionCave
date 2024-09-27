@@ -8,6 +8,10 @@ def creerChef(nom, prenom, telephone):
     session.commit()
     session.close()
 
+def obtenirChefPar(nom, motDePasse):
+    session = SessionLocal()
+    session.query(Chef).filter()
+
 
 def obtenirChefs():
     session = SessionLocal()

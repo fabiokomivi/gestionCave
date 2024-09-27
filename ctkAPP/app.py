@@ -48,7 +48,7 @@ class APP(ctk.CTk):
 
         self.initRootContent()
         
-        self.after(1500, self.remplaceBienvenue)
+        self.after(1000, self.remplaceBienvenue)
         self.mainloop()
 
     def initMenu(self):
@@ -67,7 +67,7 @@ class APP(ctk.CTk):
 
     
     def initRootContent(self):
-        self.root=ctk.CTkFrame(self, fg_color="red")  #fg du root rouge
+        self.root=ctk.CTkFrame(self)  #fg du root rouge
         self.root.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)

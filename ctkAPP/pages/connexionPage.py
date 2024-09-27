@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from controleur.chefControler import *
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class ConnexionPage(ctk.CTkFrame):
@@ -18,9 +19,23 @@ class ConnexionPage(ctk.CTkFrame):
         self.connexionFrame.grid_columnconfigure(0, weight=1)
         
 
-        ctk.CTkLabel(self.connexionFrame, text="connexion", height=100, width=150, fg_color="green").grid(row=0, column=0, padx=20, sticky="ew")
-        self.userEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="utilisateur", height=10)
-        self.userEntree.grid(row=1, column=0, sticky="nsew", padx=20, pady=(30, 10))
-        self.mpdEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="mot de passe", height=30)
-        self.mpdEntree.grid(row=2, column=0, sticky="nsew", padx=20, pady=(10, 30))
+        ctk.CTkLabel(self.connexionFrame, text="connexion", height=100, width=150, font=ctk.CTkFont(family="Arial", size=35, weight="bold")).grid(row=0, column=0, padx=20, sticky="ew")
+
+        self.userEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="utilisateur", height=50, width=300)
+        self.userEntree.grid(row=1, column=0, padx=40, pady=(50, 0))
+
+        self.mpdEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="mot de passe", height=50, width=300)
+        self.mpdEntree.grid(row=2, column=0, padx=40, pady=(0, 50))
+
+
+        self.bouttonCommit = ctk.CTkButton(self.connexionFrame,width=150, height=20, text="valider", fg_color="green", text_color="white",command=self.verification)
+        self.bouttonCommit.grid(row=3, column=0, pady=(0, 20))
+
+    def verification(self):
+        chefs = obtenirChefs()
+        print(chefs)
+        password = self.mpdEntree.get()
+        username = self.userEntree.get()
+        self.controller.changePage("contenu")
+
         

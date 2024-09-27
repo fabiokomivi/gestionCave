@@ -1,37 +1,29 @@
+import customtkinter as ctk
 
-import customtkinter as ctk 
-from PIL import Image
-
-class CoverImageApp(ctk.CTk):
+class App(ctk.CTk):
     def __init__(self):
         super().__init__()
-        self.title("Cover Image Example")
-        self.geometry("800x600")
-        
-        # Charger l'image à partir d'un fichier
-        self.image = ctk.CTkImage(Image.open("/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/settings.png"))
-        
-        # Créer un label pour afficher l'image
-        self.image_label = ctk.CTkLabel(self, text="")
-        self.image_label.pack(fill="both", expand=True)
-        
-        # Ajuster l'image au redimensionnement de la fenêtre
-        self.bind("<Configure>", self.resize_image)
 
-    def resize_image(self, event):
-        # Calculer les dimensions à partir de la taille de la fenêtre
-        window_width = event.width
-        window_height = event.height
+        self.title("Bouton avec limite de taille")
+        self.geometry("400x300")
         
-        # Redimensionner l'image tout en gardant le ratio d'aspect
-        resized_image = self.image._size((window_width, window_height), Image.Resampling.LANCZOS)
+        # Limiter la taille de la fenêtre (optionnel)
+        self.maxsize(500, 400)
         
-        # Convertir l'image en format compatible avec Tkinter
-        self.cover_image = ImageTk.PhotoImage(resized_image)
+        # Configuration de la grille
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        # Création d'un bouton avec une taille maximale
+        self.bouton = ctk.CTkButton(self, text="Bouton", width=200, height=100)
         
-        # Mettre à jour l'image du label
-        self.image_label.configure(image=self.cover_image)
+        # Positionnement du bouton avec des marges
+        self.bouton.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
+        
+        # Ajuster la grille pour que le bouton ne prenne pas tout l'espace
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
 
 if __name__ == "__main__":
-    app = CoverImageApp()
+    app = App()
     app.mainloop()
