@@ -7,6 +7,7 @@ class Chef(MODEL):
     id = Column(Integer, primary_key=True, nullable=False)
     nom = Column(String, nullable=False)
     prenom = Column(String, nullable=False)
+    motDePasse = Column(String, nullable=False)
     telephone = Column(String, nullable=False)
 
     employes = relationship("Employe", back_populates="chef")

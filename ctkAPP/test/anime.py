@@ -1,39 +1,22 @@
-import customtkinter as ctk
-import time
+import tkinter as tk
 
-class AnimatedFrame(ctk.CTkFrame):
-    def __init__(self, parent, text, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        self.text = text
-        self.label = ctk.CTkLabel(self, text="")
-        self.label.grid(row=0, column=0, padx=5, pady=5)
-        self.animate_text()
+class MyApp(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.geometry("600x400")
+        self.title("Exemple avec place et étendre en Tkinter")
 
-    def animate_text(self):
-        full_text = self.text
-        current_text = ""
-        index = 0
+        # Créer un frame qui va s'étendre
+        self.frame = tk.Frame(self, bg="lightblue")
+        
+        # Utiliser place avec relwidth et relheight pour étendre le frame
+        self.frame.place(relx=0, rely=0, relwidth=1, relheight=1)  # relwidth=1 et relheight=1 signifie qu'il prend tout l'espace
 
-        def update_text():
-            nonlocal index, current_text
-            if index < len(full_text):
-                current_text += full_text[index]
-                self.label.configure(text=current_text)
-                index += 1
-            else:
-                # Réinitialiser pour recommencer l'animation en boucle
-                current_text = ""
-                index = 0
-            self.after(150, update_text)
+        # Ajouter un bouton pour vérifier que le frame fonctionne
+        self.bouton = tk.Button(self.frame, text="Ceci est un bouton")
+        self.bouton.place(relx=0.5, rely=0.5, anchor="center")  # Positionner le bouton au centre
 
-        update_text()
-
-# Exécution de l'exemple
+# Lancer l'application
 if __name__ == "__main__":
-    app = ctk.CTk()
-    app.geometry("400x200")
-
-    frame = AnimatedFrame(app, text="Bonjour, bienvenue dans l'animation de texte!")
-    frame.grid(row=0, column=0, padx=20, pady=20)
-
+    app = MyApp()
     app.mainloop()

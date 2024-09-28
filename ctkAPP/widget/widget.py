@@ -7,8 +7,9 @@ class myButton(ctk.CTkButton):
         super().__init__(parent, text=text, width=70, command= lambda:controller.changePage(text) )
 
 class menuItem(ctk.CTkFrame):
-    def __init__(self, parent, controller, buttonText, image_path, row):
+    def __init__(self, parent, controller, buttonText, image_path):
         super().__init__(parent, height=100)
+        self.controller = controller
 
         # Charger l'image avec PIL
         image = Image.open(image_path)
@@ -28,7 +29,6 @@ class menuItem(ctk.CTkFrame):
         self.rowconfigure(0, weight=1, minsize=75)  # Laisser assez de hauteur
 
         # Placer le frame dans le grid layout
-        self.grid(row=row, column=0, sticky="ew", pady=5 if not buttonText=="quitter" else 175, padx=5)
 
         # Sauvegarder l'image pour éviter qu'elle soit garbage collectée
         self.ctk_image = ctk_image

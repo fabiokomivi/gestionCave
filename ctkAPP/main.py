@@ -1,29 +1,31 @@
 import customtkinter as ctk
 
-class App(ctk.CTk):
-    def __init__(self):
-        super().__init__()
+def ouvrir_fenetre_fille():
+    # Masquer la fenêtre mère
+    root.withdraw()  # Masquer la fenêtre mère
 
-        self.title("Bouton avec limite de taille")
-        self.geometry("400x300")
-        
-        # Limiter la taille de la fenêtre (optionnel)
-        self.maxsize(500, 400)
-        
-        # Configuration de la grille
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+    # Créer une fenêtre fille
+    fenetre_fille = ctk.CTk()
+    fenetre_fille.title("Fenêtre Fille")
 
-        # Création d'un bouton avec une taille maximale
-        self.bouton = ctk.CTkButton(self, text="Bouton", width=200, height=100)
-        
-        # Positionnement du bouton avec des marges
-        self.bouton.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
-        
-        # Ajuster la grille pour que le bouton ne prenne pas tout l'espace
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
+    # Ajouter un bouton pour fermer la fenêtre fille
+    bouton_fermer = ctk.CTkButton(fenetre_fille, text="Fermer", command=lambda: fermer_fenetre(fenetre_fille))
+    bouton_fermer.pack(pady=20)
 
-if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    # Lancer la boucle principale de la fenêtre fille
+    fenetre_fille.mainloop()
+
+def fermer_fenetre(fenetre_fille):
+    fenetre_fille.destroy()
+    root.deiconify()  # Réafficher la fenêtre mère
+
+# Créer la fenêtre principale
+root = ctk.CTk()
+root.title("Fenêtre Mère")
+
+# Ajouter un bouton pour ouvrir la fenêtre fille
+bouton_ouvrir = ctk.CTkButton(root, text="Ouvrir Fenêtre Fille", command=ouvrir_fenetre_fille)
+bouton_ouvrir.pack(pady=20)
+
+# Lancer la boucle principale de la fenêtre mère
+root.mainloop()

@@ -1,8 +1,12 @@
+import time
 import customtkinter as ctk
 from controleur.chefControler import *
+from controleur.employeControler import *
+import re
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class ConnexionPage(ctk.CTkFrame):
+    patern = r"[a-zA-Z0-9#*@_]+"
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
@@ -20,22 +24,50 @@ class ConnexionPage(ctk.CTkFrame):
         
 
         ctk.CTkLabel(self.connexionFrame, text="connexion", height=100, width=150, font=ctk.CTkFont(family="Arial", size=35, weight="bold")).grid(row=0, column=0, padx=20, sticky="ew")
+        
 
         self.userEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="utilisateur", height=50, width=300)
-        self.userEntree.grid(row=1, column=0, padx=40, pady=(50, 0))
+        self.userEntree.grid(row=1, column=0, padx=40, pady=(50, 10))
 
-        self.mpdEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="mot de passe", height=50, width=300)
-        self.mpdEntree.grid(row=2, column=0, padx=40, pady=(0, 50))
+        self.mpdEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="mot de passe", show="*", height=50, width=300)
+        self.mpdEntree.grid(row=2, column=0, padx=40, pady=(10, 50))
 
 
         self.bouttonCommit = ctk.CTkButton(self.connexionFrame,width=150, height=20, text="valider", fg_color="green", text_color="white",command=self.verification)
         self.bouttonCommit.grid(row=3, column=0, pady=(0, 20))
 
+        self.labelInfo = ctk.CTkLabel(self.connexionFrame, text="", height=100, width=30, font=ctk.CTkFont(family="Arial", size=15, weight="bold"))
+        self.labelInfo.grid(row=4, column=0, padx=20, sticky="ew")
+
     def verification(self):
-        chefs = obtenirChefs()
-        print(chefs)
-        password = self.mpdEntree.get()
-        username = self.userEntree.get()
-        self.controller.changePage("contenu")
+        motDePasse = self.mpdEntree.get()
+        nom = self.userEntree.get()
+        if not re.match(self.patern, nom):
+            self.labelInfo.configure(text="!! le nom ne doit pas etre vide !!")
+            self.rougir(self.userEntree)
+
+        elif not re.match(self.patern, motDePasse):
+            self.labelInfo.configure(text="!! le mot de passe ne doit pas etre vide !!")
+            self.rougir(self.mpdEntree)
+        else:
+            utilisateur = obtenirChefPar(nom, motDePasse)
+            self.controller.utilisateurType="chef"
+            if not utilisateur:
+                utilisateur = obtenirEmployePar(nom, motDePasse)
+                self.controller.utilisateurType="employe"
+            if utilisateur:
+                self.labelInfo.configure(text="!! connexion reussie !!")
+                self.controller.chargerBoutonMenu()
+                time.sleep(1)
+                self.controller.changePage("contenu")
+            else:
+                self.labelInfo.configure(text="!! utilisateur n'existe pas !!")
+
+    def rougir(self, widget):
+        widget.configure(fg_color = "red")
+        self.after(1500, lambda:self.blanchir(widget))
+
+    def blanchir(self, widget):
+        widget.configure(fg_color="white")
 
         
