@@ -7,7 +7,10 @@ class Client(MODEL):
     id = Column(Integer, primary_key=True, nullable=False)
     nom = Column(String, nullable=False)
     prenom = Column(String, nullable=False)
-    telephone = Column(String, nullable=False)
-    addresse = Column(String, nullable=False)
+    telephone = Column(String, nullable=False, unique=True)
+    addresse = Column(String, nullable=False, unique=True)
+    employeId = Column(Integer, ForeignKey("Employes.id"))
+
+    employe = relationship("Employe", back_populates="clients")
 
     commandes = relationship("Commande", back_populates="client")

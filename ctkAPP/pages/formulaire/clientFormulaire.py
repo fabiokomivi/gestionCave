@@ -1,25 +1,31 @@
+import time
 import customtkinter as ctk
+import tkinter as tk
+from .erreur.erreur import erreur
 import re
+from controleur.clientControler import obtenirClientparAttribue
 
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
 
-class ClientForm(ctk.CTk):
+class ClientForm(ctk.CTkToplevel):
     emailPattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     numeroPattern = r"[0-9]{8}"
     nomPattern = r"[a-zA-Z]"
 
-    def __init__(self, controller, dico):
-        super().__init__()
+    def __init__(self,controller, callback, dico, mode):
+        super().__init__(controller)
         self.geometry("500x400")
-        self.controller = controller
+        self.callback = callback
+        self.mode = mode
+        
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=0)
 
-        self.titre = ctk.CTkLabel(self, text="modif/ajout", font=ctk.CTkFont(family="Arial", size=25, weight="bold"))
+        self.titre = ctk.CTkLabel(self, text=mode, font=ctk.CTkFont(family="Arial", size=25, weight="bold"))
         self.titre.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         self.contenu = ctk.CTkFrame(self)
@@ -51,7 +57,11 @@ class ClientForm(ctk.CTk):
         self.annuler = ctk.CTkButton(self.confirmationFrame, text="annuler", fg_color="red", command=self.quitter)
         self.valider.pack(side="right", padx=(30, 50), pady=10)
         self.annuler.pack(side="left", padx=(50, 30), pady=10)
-        self.mainloop()
+
+        self.wait_visibility()
+        self.grab_set()
+        #self.grab_set_global()
+        #self.mainloop()
 
     def verification(self):
         nom = self.entreeNom.get()
@@ -68,10 +78,17 @@ class ClientForm(ctk.CTk):
         elif not re.match(self.emailPattern, addresse):
             self.rougir(self.entreeAddresse)
         else:
-            client = {"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse}
-            self.controller.reponse = client
-            self.controller.controller.deiconify()
-            self.quit()
+            if self.mode=="ajout":
+                if obtenirClientparAttribue(telephone=telephone): 
+                    self.wait_window(erreur(self, "un client possede deja ce numero"))
+                elif obtenirClientparAttribue(addresse=addresse):
+                    self.wait_window(erreur(self, "un client possede deja cet addresse"))
+                else:
+                    self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse})
+                    self.destroy()
+            else:
+                self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse})
+                self.destroy()
 
     def rougir(self, widget):
         widget.configure(fg_color = "red")
@@ -81,7 +98,7 @@ class ClientForm(ctk.CTk):
         widget.configure(fg_color="white")
 
     def quitter(self):
-        self.controller.controller.deiconify()
+        #self.controller.controller.deiconify()
         self.destroy()
 
 

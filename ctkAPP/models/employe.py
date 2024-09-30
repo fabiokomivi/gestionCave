@@ -8,10 +8,12 @@ class Employe(MODEL):
     nom = Column(String, nullable=False)
     prenom = Column(String, nullable=False)
     motDePasse = Column(String, nullable=False)
-    telephone = Column(String, nullable=False)
-    addresse = Column(String, nullable=False)
+    telephone = Column(String, nullable=False, unique=True)
+    addresse = Column(String, nullable=False, unique=True)
 
     chefId = Column(Integer, ForeignKey('Chefs.id'))
     chef = relationship("Chef", back_populates="employes")
+
+    clients = relationship("Client", back_populates="employe")
 
     commandes = relationship("Commande", back_populates="employe")

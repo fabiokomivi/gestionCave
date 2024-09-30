@@ -29,8 +29,12 @@ class ConnexionPage(ctk.CTkFrame):
         self.userEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="utilisateur", height=50, width=300)
         self.userEntree.grid(row=1, column=0, padx=40, pady=(50, 10))
 
+        self.userEntree.insert(0, "toto")
+
         self.mpdEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="mot de passe", show="*", height=50, width=300)
         self.mpdEntree.grid(row=2, column=0, padx=40, pady=(10, 50))
+
+        self.mpdEntree.insert(0, "employe1")
 
 
         self.bouttonCommit = ctk.CTkButton(self.connexionFrame,width=150, height=20, text="valider", fg_color="green", text_color="white",command=self.verification)
@@ -59,6 +63,7 @@ class ConnexionPage(ctk.CTkFrame):
                 self.labelInfo.configure(text="!! connexion reussie !!")
                 self.controller.chargerBoutonMenu()
                 time.sleep(1)
+                self.controller.utilisateurCourant = utilisateur
                 self.controller.changePage("contenu")
             else:
                 self.labelInfo.configure(text="!! utilisateur n'existe pas !!")

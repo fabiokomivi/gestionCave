@@ -39,6 +39,7 @@ class APP(ctk.CTk):
     pagesEmploye = {}
     pagesChef = {}
     utilisateurType = ""
+    utilisateurCourant = None
 
 
 
@@ -55,7 +56,7 @@ class APP(ctk.CTk):
 
         self.initRootContent()
         
-        #self.after(1000, self.remplaceBienvenue)
+        self.after(1000, self.remplaceBienvenue)
         self.mainloop()
 
     def initMenu(self):
@@ -84,11 +85,11 @@ class APP(ctk.CTk):
         self.pagesPrimaire["contenu"] = ContentPage(self.root, self)
         for pagePrimaire in self.pagesPrimaire.values():
             pagePrimaire.grid(row=0, column=0, sticky="nsew")
-        self.pagesPrimaire["contenu"].tkraise()
+        self.pagesPrimaire["bienvenue"].tkraise()
 
         
         self.pagesSecondaire["pageEmploye"] = ctk.CTkFrame(self.pagesPrimaire["contenu"])
-        self.pagesSecondaire["pageChef"] = ctk.CTkFrame(self.pagesPrimaire["contenu"])
+        self.pagesSecondaire["gestions"] = ctk.CTkFrame(self.pagesPrimaire["contenu"])
         for pageSecondaire in self.pagesSecondaire.values():
 
             pageSecondaire.grid_columnconfigure(0, weight=0)
@@ -106,7 +107,7 @@ class APP(ctk.CTk):
         self.menuEmploye.grid(row=0, column=0, sticky="ns")
 
         ctk.CTkLabel(self.menuEmploye, text="menu").pack(pady=(10, 15))
-        self.chargerBoutonMenutest()
+        #self.chargerBoutonMenu()
 
 
         self.employeContenu=ctk.CTkFrame(self.pagesSecondaire["pageEmploye"])
@@ -123,45 +124,38 @@ class APP(ctk.CTk):
 
 
         #menu chef
-        self.menuChef = ctk.CTkFrame(self.pagesSecondaire["pageChef"], width=200)
+        self.menuChef = ctk.CTkFrame(self.pagesSecondaire["gestions"], width=200)
         self.menuChef.grid_columnconfigure(0, weight=1)
         self.menuChef.grid_propagate(False)
         self.menuChef.grid(row=0, column=0, sticky="ns")
 
         ctk.CTkLabel(self.menuChef, text="menu").grid(row=0, column=0, padx=5, sticky="ew", pady=(10, 15))
 
-        menuItem(self.menuChef, self, "categories", self.clientImagePath)
-        menuItem(self.menuChef, self, "boissons", self.commandImagePath)
-        menuItem(self.menuChef, self, "employes", self.bossImagePath)
-        menuItem(self.menuChef, self, "parametres", self.settingImagePath)
-        menuItem(self.menuChef, self, "quitter", self.exitImagePath)
+        menuItem(self.menuChef, self, "categories", self.clientImagePath).pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "boissons", self.commandImagePath).pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "employes", self.bossImagePath).pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "parametres", self.settingImagePath).pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "quitter", self.exitImagePath).pack(side="bottom", padx=5, pady=3, fill="x")
 
-        self.chefContenu=ctk.CTkFrame(self.pagesSecondaire["pageChef"])
-        self.chefContenu.grid(row=0, column=1)
+        self.chefContenu=ctk.CTkFrame(self.pagesSecondaire["gestions"])
+        self.chefContenu.grid_columnconfigure(0, weight=1)
+        self.chefContenu.grid_rowconfigure(0, weight=1)
+        self.chefContenu.grid(row=0, column=1, sticky="nsew")
 
         self.pagesChef["boissons"] = BoissonPage(self.chefContenu, self)
         self.pagesChef["categories"] = CategoriePage(self.chefContenu, self)
         self.pagesChef["employes"] = EmployePage(self.chefContenu, self)
-        for pageChef in self.pagesChef.values():
-            pageChef.grid(row=0, column=0, sticky="nsew")
+        for gestions in self.pagesChef.values():
+            gestions.grid(row=0, column=0, sticky="nsew")
 
         self.pagesSecondaire["pageEmploye"].tkraise()  #mise en premier plan de la page des employes
 
+    
     def chargerBoutonMenu(self):
-        menuItem(self.menuEmploye, self, "clients", self.clientImagePath, 1)
-        menuItem(self.menuEmploye, self, "commandes", self.commandImagePath, 2)
-        if self.utilisateurType == "employe":
-            menuItem(self.menuEmploye, self, "parametres", self.settingImagePath, 3)
-            menuItem(self.menuEmploye, self, "quitter", self.exitImagePath, 4)
-        elif self.utilisateurType == "chef":
-            menuItem(self.menuEmploye, self, "gestions", self.bossImagePath, 3)
-            menuItem(self.menuEmploye, self, "parametres", self.settingImagePath, 4)
-            menuItem(self.menuEmploye, self, "quitter", self.exitImagePath, 5)
-
-    def chargerBoutonMenutest(self):
         menuItem(self.menuEmploye, self, "clients", self.clientImagePath).pack(padx=3, pady=3, fill="x")
         menuItem(self.menuEmploye, self, "commandes", self.commandImagePath).pack(padx=3,pady=3, fill="x")
-        menuItem(self.menuEmploye, self, "gestions", self.bossImagePath).pack(padx=3,pady=3, fill="x")
+        if self.utilisateurType=="chef":
+            menuItem(self.menuEmploye, self, "gestions", self.bossImagePath).pack(padx=3,pady=3, fill="x")
         menuItem(self.menuEmploye, self, "parametres", self.settingImagePath).pack(padx=3,pady=3, fill="x")
         menuItem(self.menuEmploye, self, "quitter", self.exitImagePath).pack(padx=3, pady=3, side="bottom", fill="x")
 

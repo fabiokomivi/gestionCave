@@ -1,12 +1,22 @@
 from models.database import SessionLocal
+from sqlalchemy import and_
 from models.client import Client
+from sqlalchemy.exc import SQLAlchemyError
 
 
-def creerClient(nom, prenom, telephone, addresse):
+def creerClient(employeId, nom, prenom, telephone, addresse):
     session = SessionLocal()
-    session.add(Client(nom=nom, prenom=prenom, telephone=telephone, addresse=addresse))
-    session.commit()
-    session.close()
+    result=False
+    try:
+        session.add(Client(employeId=employeId, nom=nom, prenom=prenom, telephone=telephone, addresse=addresse))
+    except SQLAlchemyError as e:
+        result = False
+    else:
+        session.commit()
+        result = True
+    finally:
+        session.close()
+        return result
 
 
 def obtenirClients():
@@ -14,3 +24,55 @@ def obtenirClients():
     clients = session.query(Client).all()
     session.close
     return clients
+
+def obtenirClientparAttribue(clientId=None, nom=None, prenom=None, telephone=None, addresse=None):
+    session = SessionLocal()
+    query = session.query(Client)  # Commence par la base de la requête
+    
+    # Ajoute les filtres uniquement si les valeurs sont spécifiées
+    
+    if nom:
+        query = query.filter(Client.nom.ilike(f"%{nom}%"))
+    if prenom:
+        query = query.filter(Client.prenom.ilike(f"%{prenom}%"))
+    if telephone:
+        query = query.filter(Client.telephone.ilike(f"%{telephone}%"))
+    if addresse:
+        query = query.filter(Client.addresse.ilike(f"%{addresse}%"))
+    if clientId:
+        query = query.filter(Client.id == clientId)
+
+    clients = query.all()
+    session.close()
+    
+    return clients
+
+def modifierClient(client_id, nom=None, prenom=None, telephone=None, addresse=None):
+    # Ouvrir une session
+    session = SessionLocal()
+    client = session.query(Client).filter(Client.id == client_id).first()
+    if client is None:
+        session.close()
+        return False
+    if nom:
+        client.nom = nom
+    if prenom:
+        client.prenom = prenom
+    if telephone:
+        client.telephone = telephone
+    if addresse:
+        client.addresse = addresse
+    session.commit()
+    return True
+
+def supprimerClient(client_id):
+    session = SessionLocal()  # Ouvre une session avec la base de données
+    # Rechercher le client par son id
+    client = session.query(Client).filter(Client.id == client_id).first()
+
+    if client:
+        # Supprimer le client
+        session.delete(client)
+        session.commit()  # Appliquer les changements dans la base de données
+        session.close()  # Fermer la session
+
