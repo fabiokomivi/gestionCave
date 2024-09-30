@@ -131,10 +131,6 @@ class ClientPage(ctk.CTkFrame):
                         addresse=self.reponse["addresse"]
             ):
                 self.clientTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
-                """for item in self.clientTab.get_children():
-                    if self.clientTab.item(item, 'values')[0] == selection[0]:
-                        self.clientTab.item(item, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
-        #self.miseAJourTable()"""
 
     def supprimer(self):
         selection=self.clientTab.selection()
