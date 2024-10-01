@@ -7,14 +7,15 @@ def creerCategorie(nom, description):
     session.add(Categorie(nom=nom, description=description))
     session.commit()
     session.close()
+    return True
 
 
-def obtenirCategorieParAttribue(categorieId, nom, description, tous=True):
+def obtenirCategorieParAttribue(categorieId="", nom="", description="", tous=True):
     session = SessionLocal()
     query = session.query(Categorie)
     if tous:
         session.close()
-        return query(Categorie).all()
+        return query.all()
     else:
         if categorieId:
             query = query.filter(Categorie.id == categorieId)

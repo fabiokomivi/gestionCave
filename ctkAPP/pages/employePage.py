@@ -20,7 +20,7 @@ class EmployePage(ctk.CTkFrame):
         self.grid_rowconfigure(2, weight=1)
 
 
-        self.titre = ctk.CTkLabel(self, text="categories", font=ctk.CTkFont(family="Arial", size=25, weight="bold"), height=30)
+        self.titre = ctk.CTkLabel(self, text="employes", font=ctk.CTkFont(family="Arial", size=25, weight="bold"), height=30)
         self.menu = ctk.CTkFrame(self, height=150)
         self.tabFrame = ctk.CTkFrame(self)
         

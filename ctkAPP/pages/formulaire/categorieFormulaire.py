@@ -32,12 +32,11 @@ class categorieForm(ctk.CTkToplevel):
         self.contenu.grid(row=1, column=0, sticky="nsew", padx=15, pady=5)
 
         self.entreeNom = ctk.CTkEntry(self.contenu, placeholder_text="nom", width=200)
-        self.entreeDescription = ctk.CTkEntry(self.contenu, placeholder_text="description", width=200, height=100)
-
+        self.entreeDescription = ctk.CTkTextbox(self.contenu, font=("Arial", 18), wrap="word", height=150, width=300)
 
         if dico:
             self.entreeNom.insert(0, dico["nom"])
-            self.entreeDescription.insert(0, dico["description"])
+            self.entreeDescription.insert("1.0", dico["description"])
 
         self.entreeNom.grid(row=0, column=0, pady=(30, 5))
         self.entreeDescription.grid(row=1, column=0, pady=(5, 5))
@@ -58,9 +57,7 @@ class categorieForm(ctk.CTkToplevel):
 
     def verification(self):
         nom = self.entreeNom.get()
-        description = self.entreeDescription.get()
-        telephone = self.entreeTelephone.get()
-        addresse = self.entreeAddresse.get()
+        description = self.entreeDescription.get("1.0", "end-1c")
 
         if not re.match(self.nomPattern, nom):
             self.rougir(self.entreeNom)
@@ -68,10 +65,10 @@ class categorieForm(ctk.CTkToplevel):
             self.rougir(self.entreeDescription)
         else:
             if self.mode=="ajout":
-                if obtenirCategorieParAttribue(nom=telephone): 
-                    self.wait_window(erreur(self, "un client possede deja ce numero"))
-                elif obtenirCategorieParAttribue(description==addresse):
-                    self.wait_window(erreur(self, "un client possede deja cet addresse"))
+                if obtenirCategorieParAttribue(nom=nom, categorieId="", description="", tous=False): 
+                    self.wait_window(erreur(self, "cette categorie existe dejà"))
+                elif obtenirCategorieParAttribue(nom="", categorieId="", description=description, tous=False):
+                    self.wait_window(erreur(self, "une categorie a dejà cette description"))
                 else:
                     self.callback({"nom": nom, "description": description})
                     self.destroy()

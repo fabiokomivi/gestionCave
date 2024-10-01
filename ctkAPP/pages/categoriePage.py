@@ -34,21 +34,30 @@ class CategoriePage(ctk.CTkFrame):
         self.frameGauche = ctk.CTkFrame(self.menu, height=50)
         self.frameGauche.pack(side="left", padx=3, pady=3)
 
-        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, command=self.ajouter)
+        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, command=self.ajouterCategorie)
         self.nouveauBoutton.pack(side="left", padx=3, pady=3)
 
-        self.modifierBoutton = ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, command=self.modifier)
+        self.modifierBoutton = ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, command=self.modifierCategorie)
         self.modifierBoutton.pack(side="right", padx=3, pady=3)
 
-        self.supprimerBoutton = ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, command=self.supprimer)
+        self.supprimerBoutton = ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, command=self.supprimerCategorie)
         self.supprimerBoutton.pack(side="right", padx=3, pady=3)
+
 
         self.tabFrame.grid_columnconfigure(0, weight=1)
         self.tabFrame.grid_rowconfigure(1, weight=1)
         self.tabFrame.grid_rowconfigure(0, weight=0)
 
         self.barreRecherche = ctk.CTkFrame(self.tabFrame, height=50)
-        self.categorieTab = tk.ttk.Treeview(self.tabFrame, columns=self.categorieAttribue, show="headings")
+
+        style = tk.ttk.Style()
+        style.configure("mystyle.Treeview", font=("Arial", 14))  # Augmenter la taille de la police
+        style.configure("mystyle.Treeview.Heading", font=("Arial", 16, "bold"))  # Augmenter la taille de la police des titres
+        style.configure("mystyle.Treeview", rowheight=30)  # Augmenter la hauteur des lignes
+
+        self.categorieTab = tk.ttk.Treeview(self.tabFrame,style="mystyle.Treeview", columns=self.categorieAttribue, show="headings")
+
+        self.categorieTab.bind("<Configure>", self.ajuster)
         
 
         for attribue in self.categorieAttribue:
@@ -67,31 +76,29 @@ class CategoriePage(ctk.CTkFrame):
 
         self.rechercheEntree = ctk.CTkEntry(self.boxRecherche, width=200)
         self.rechercheEntree.pack(padx=2, pady=2, side="right")
-        #self.rechercheEntree.bind("<KeyRelease>", self.recherche)
+        self.rechercheEntree.bind("<KeyRelease>", self.recherche)
 
         self.selecteur.pack(side="left", padx=2, pady=2)
+        self.miseAJourTable()
 
     
     def recherche(self, event=None):
         critere = self.selecteur.get()
         texteRechere = self.rechercheEntree.get()
-        print(*self.categorieTab.get_children())
-        self.categorieTab.delete(*self.categorieTab.get_children())
         match critere:
             case "id":
                 print(f"'{texteRechere}'")
-                self.listeCategorie = obtenirCategorieParAttribue (employeId=eval(texteRechere.strip()))
+                self.listeCategorie = obtenirCategorieParAttribue (employeId=eval(texteRechere.strip()), tous=False)
             case "nom":
-                self.listeCategorie = obtenirCategorieParAttribue (nom=texteRechere)
-            case "desciption":
-                self.listeCategorie = obtenirCategorieParAttribue (desciption=texteRechere)
+                self.listeCategorie = obtenirCategorieParAttribue (nom=texteRechere, tous=False)
+            case "description":
+                self.listeCategorie = obtenirCategorieParAttribue (description=texteRechere, tous=False)
+        self.categorieTab.delete(*self.categorieTab.get_children())
         for categorie in self.listeCategorie:
             print(categorie.nom)
-            self.categorieTab.insert("", tk.END, values=(categorie.nom, categorie.desciption, categorie.telephone, categorie.addresse))
+            self.categorieTab.insert("", tk.END, values=(categorie.nom, categorie.description))
 
         
-
-
 
 
     def ajouterCategorie(self):
@@ -99,36 +106,30 @@ class CategoriePage(ctk.CTkFrame):
         self.wait_window(categorieForm(self, self.avoirInfo,  {}, self.mode))
         
         print(self.reponse)
-        if creerCategorie(employeId=self.controller.utilisateurCourant.id,
+        if creerCategorie(
                     nom=self.reponse["nom"],
-                    desciption=self.reponse["desciption"],
-                    telephone=self.reponse["telephone"],
-                    addresse=self.reponse["addresse"]
+                    description=self.reponse["description"]
                 ):
-            nouveau = obtenirCategorieParAttribue (telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])
+            nouveau = obtenirCategorieParAttribue (nom=self.reponse["nom"], description=self.reponse["description"], tous=False, categorieId="")
             print(nouveau)
-            self.categorieTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["desciption"], self.reponse["telephone"], self.reponse["addresse"]))
-        #self.miseAJourTable()
+            self.categorieTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["description"]))
+
 
     def modifierCategorie(self):
         selection = self.categorieTab.selection()
         if selection:
             self.mode = "modification"
             attribues = self.categorieTab.item(selection)["values"]
-            print(selection)
-            print("selection[0]: ",selection[0])
-            categorie = { "nom": attribues[0], "desciption": attribues[1], "telephone": attribues[2], "addresse": attribues[3]}
+            categorie = { "nom": attribues[0], "description": attribues[1]}
             self.wait_window(categorieForm(self, self.avoirInfo,  categorie, self.mode))
-            print(selection, selection[0])
-            if modifierCategorie(categorie_id=eval(selection[0]),
-                        nom=self.reponse["nom"],
-                        desciption=self.reponse["desciption"],
-                        telephone=self.reponse["telephone"],
-                        addresse=self.reponse["addresse"]
-            ):
-                self.categorieTab.item(selection, values=(self.reponse["nom"], self.reponse["desciption"], self.reponse["telephone"], self.reponse["addresse"]))
+            if self.reponse:
+                if modifierCategorie(categorieId=eval(selection[0]),
+                            nom=self.reponse["nom"],
+                            description=self.reponse["description"]
+                ):
+                    self.categorieTab.item(selection, values=(self.reponse["nom"], self.reponse["description"]))
 
-    def supprimer(self):
+    def supprimerCategorie(self):
         selection=self.categorieTab.selection()
         if selection:
             supprimerCategorie(selection[0])
@@ -136,14 +137,21 @@ class CategoriePage(ctk.CTkFrame):
 
         
     def miseAJourTable(self):
-        self.listeCategorie = obtenirCategorieParAttribue()
+        self.listeCategorie = obtenirCategorieParAttribue(tous=True, categorieId="", description="", nom="")
         self.categorieTab.delete(*self.categorieTab.get_children())
         for categorie in self.listeCategorie:
-            self.categorieTab.insert("", tk.END, iid=categorie.id, values=(categorie.nom, categorie.desciption, categorie.telephone, categorie.addresse))
+            self.categorieTab.insert("", tk.END, iid=categorie.id, values=(categorie.nom, categorie.description))
 
     def avoirInfo(self, information):
         self.reponse = information
         print(self.reponse)
 
+
+
+    def ajuster(self, event):
+        largeur_totale = self.categorieTab.winfo_width()
+        # Proportion : 1/3 pour "Nom" et 2/3 pour "Catégorie"
+        self.categorieTab.column("nom", width=int(largeur_totale * 1 / 4))
+        self.categorieTab.column("description", width=int(largeur_totale * 3 / 4))
 
 
