@@ -8,6 +8,7 @@ from pages.gestionPage import GestionPage
 from pages.categoriePage import CategoriePage
 from pages.boissonPage import BoissonPage
 from pages.employePage import EmployePage
+from pages.stockPage import StockPage
 
 from pages.bienvenue import BienvenuePage
 from pages.connexionPage import ConnexionPage
@@ -134,6 +135,7 @@ class APP(ctk.CTk):
         menuItem(self.menuChef, self, "categories", self.clientImagePath).pack(side="top", padx=5, pady=3, fill="x")
         menuItem(self.menuChef, self, "boissons", self.commandImagePath).pack(side="top", padx=5, pady=3, fill="x")
         menuItem(self.menuChef, self, "employes", self.bossImagePath).pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "stock", self.settingImagePath).pack(side="top", padx=5, pady=3, fill="x")
         menuItem(self.menuChef, self, "parametres", self.settingImagePath).pack(side="top", padx=5, pady=3, fill="x")
         menuItem(self.menuChef, self, "quitter", self.exitImagePath).pack(side="bottom", padx=5, pady=3, fill="x")
 
@@ -145,6 +147,7 @@ class APP(ctk.CTk):
         self.pagesChef["boissons"] = BoissonPage(self.chefContenu, self)
         self.pagesChef["categories"] = CategoriePage(self.chefContenu, self)
         self.pagesChef["employes"] = EmployePage(self.chefContenu, self)
+        self.pagesChef["stock"] = StockPage(self.chefContenu, self)
         for gestions in self.pagesChef.values():
             gestions.grid(row=0, column=0, sticky="nsew")
 

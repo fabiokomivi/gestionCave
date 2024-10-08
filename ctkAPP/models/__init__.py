@@ -5,3 +5,4 @@ from .categorie import Categorie
 from .boisson import Boisson
 from .commande import Commande
 from .stock import Stock
+from .ligneCommande import LigneCommande

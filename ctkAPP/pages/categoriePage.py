@@ -104,15 +104,14 @@ class CategoriePage(ctk.CTkFrame):
     def ajouterCategorie(self):
         self.mode = "ajout"
         self.wait_window(categorieForm(self, self.avoirInfo,  {}, self.mode))
-        
-        print(self.reponse)
-        if creerCategorie(
-                    nom=self.reponse["nom"],
-                    description=self.reponse["description"]
-                ):
-            nouveau = obtenirCategorieParAttribue (nom=self.reponse["nom"], description=self.reponse["description"], tous=False, categorieId="")
-            print(nouveau)
-            self.categorieTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["description"]))
+        if self.reponse:
+            if creerCategorie(
+                        nom=self.reponse["nom"],
+                        description=self.reponse["description"]
+                    ):
+                nouveau = obtenirCategorieParAttribue (nom=self.reponse["nom"], description=self.reponse["description"], tous=False, categorieId="")
+                print(nouveau)
+                self.categorieTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["description"]))
 
 
     def modifierCategorie(self):

@@ -9,9 +9,10 @@ class Boisson(MODEL):
     nom = Column(String, nullable=False)
     prix = Column(Integer, nullable=False)
     image = Column(LargeBinary, nullable=True)
-    description = Column(String)
 
     categorieId = Column(Integer, ForeignKey("Categories.id"))
     categorie = relationship("Categorie", back_populates="boissons")
 
-    stock = relationship("Stock", uselist=False, back_populates="boisson")
+    stock = relationship("Stock", back_populates="boisson", uselist=False, cascade="all, delete-orphan")
+
+    lignesCommande = relationship("LigneCommande", back_populates="boisson")

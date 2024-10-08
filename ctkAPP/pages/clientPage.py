@@ -101,18 +101,17 @@ class ClientPage(ctk.CTkFrame):
     def ajouterClient(self):
         self.mode = "ajout"
         self.wait_window(ClientForm(self, self.avoirInfo,  {}, self.mode))
-        
-        print(self.reponse)
-        if creerClient(employeId=self.controller.utilisateurCourant.id,
-                    nom=self.reponse["nom"],
-                    prenom=self.reponse["prenom"],
-                    telephone=self.reponse["telephone"],
-                    addresse=self.reponse["addresse"]
-                ):
-            nouveau = obtenirClientparAttribue(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])
-            print(nouveau)
-            self.clientTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
-        #self.miseAJourTable()
+        if self.reponse:
+            if creerClient(employeId=self.controller.utilisateurCourant.id,
+                        nom=self.reponse["nom"],
+                        prenom=self.reponse["prenom"],
+                        telephone=self.reponse["telephone"],
+                        addresse=self.reponse["addresse"]
+                    ):
+                nouveau = obtenirClientparAttribue(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])
+                print(nouveau)
+                self.clientTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
+            #self.miseAJourTable()
 
     def modifierClient(self):
         selection = self.clientTab.selection()
@@ -123,14 +122,14 @@ class ClientPage(ctk.CTkFrame):
             print("selection[0]: ",selection[0])
             client = { "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3]}
             self.wait_window(ClientForm(self, self.avoirInfo,  client, self.mode))
-            print(selection, selection[0])
-            if modifierClient(client_id=eval(selection[0]),
-                        nom=self.reponse["nom"],
-                        prenom=self.reponse["prenom"],
-                        telephone=self.reponse["telephone"],
-                        addresse=self.reponse["addresse"]
-            ):
-                self.clientTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
+            if self.reponse:
+                if modifierClient(client_id=eval(selection[0]),
+                            nom=self.reponse["nom"],
+                            prenom=self.reponse["prenom"],
+                            telephone=self.reponse["telephone"],
+                            addresse=self.reponse["addresse"]
+                ):
+                    self.clientTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
 
     def supprimer(self):
         selection=self.clientTab.selection()

@@ -183,7 +183,7 @@ class FenetreMere(tk.Tk):
 if __name__ == "__main__":
     app = FenetreMere()
     app.mainloop()"""
-import tkinter as tk
+"""import tkinter as tk
 
 class App(tk.Tk):
     def __init__(self):
@@ -210,3 +210,40 @@ class App(tk.Tk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+"""
+import tkinter as tk
+from tkinter import ttk
+from tkinter import PhotoImage
+
+# Créer la fenêtre principale
+root = tk.Tk()
+root.title("Affichage d'images dans un Treeview")
+root.geometry("400x300")
+
+# Créer un Treeview
+tree = ttk.Treeview(root)
+
+# Créer une colonne
+tree["columns"] = ("Nom")
+
+# Configurer les colonnes
+tree.column("#0", width=100, minwidth=50)  # Colonne pour afficher les images
+tree.column("Nom", width=200, minwidth=100)
+
+# Configurer les en-têtes
+tree.heading("#0", text="Image")
+tree.heading("Nom", text="Nom")
+
+# Charger des images
+img1 = PhotoImage(file="ctkAPP/images/employe.png")  # Remplacer par le chemin de votre image
+img2 = PhotoImage(file="ctkAPP/images/employe.png")
+
+# Insérer des éléments avec des images dans le Treeview
+tree.insert("", "end", text="Item 1", image=img1, values=("Image 1"))
+tree.insert("", "end", text="Item 2", image=img2, values=("Image 2"))
+
+# Placer le Treeview dans la fenêtre
+tree.pack(pady=20)
+
+# Démarrer la boucle principale
+root.mainloop()
