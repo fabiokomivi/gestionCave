@@ -58,3 +58,11 @@ def supprimerBoisson(boissonId):
         session.commit()
     session.close()
     return True
+
+def mettreAjour(boissonId, quantite):
+    session = SessionLocal()
+    boisson = session.query(Boisson).filter(Boisson.id==boissonId).first()
+    if boisson:
+        boisson.quantite -= int(quantite)
+        session.commit()
+    session.close()

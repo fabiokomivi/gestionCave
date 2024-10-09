@@ -1,30 +1,38 @@
 import customtkinter as ctk
 import tkinter as tk
-from PIL import Image
-from .formulaire.clientFormulaire import ClientForm
+from tkinter import filedialog
 from controleur.clientControler import *
+from .erreur.erreur import erreur
+from PIL import Image
+import re
 
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
-
-class ClientPage(ctk.CTkFrame):
+class choixClient(ctk.CTkToplevel):
 
     clientAttribue = ("nom", "prenom", "telephone", "addresse")
     rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
     reponse = {}
     mode = ""
     listeClient = []
-    def __init__(self, parent, controller):
+
+    def __init__(self, parent,callback):
         super().__init__(parent)
-        self.controller = controller
+
+        self.callback = callback
+
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        contenu = ctk.CTkFrame(self)
+        contenu.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        contenu.grid_columnconfigure(0, weight=1)
+        contenu.grid_rowconfigure(0, weight=0)
+        contenu.grid_rowconfigure(0, weight=0)
+        contenu.grid_rowconfigure(2, weight=1)
 
 
-        self.titre = ctk.CTkLabel(self, text="clients", font=ctk.CTkFont(family="Arial", size=25, weight="bold"), height=30)
-        self.menu = ctk.CTkFrame(self, height=150)
-        self.tabFrame = ctk.CTkFrame(self)
+        self.titre = ctk.CTkLabel(contenu, text="clients", font=ctk.CTkFont(family="Arial", size=25, weight="bold"), height=30)
+        self.menu = ctk.CTkFrame(contenu, height=150)
+        self.tabFrame = ctk.CTkFrame(contenu)
         
         self.titre.grid(row=0, column=0)
         self.menu.grid(row=1, column=0, sticky="ew", padx=5, pady=(5, 5))
@@ -33,14 +41,10 @@ class ClientPage(ctk.CTkFrame):
         self.frameGauche = ctk.CTkFrame(self.menu, height=50)
         self.frameGauche.pack(side="left", padx=3, pady=3)
 
-        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, command=self.ajouterClient)
-        self.nouveauBoutton.pack(side="left", padx=3, pady=3)
+        self.selectionBoutton = ctk.CTkButton(self.frameGauche, text="selectionner", height=35, width=50, command=self.valider)
+        self.selectionBoutton.pack(side="left", padx=3, pady=3)
 
-        self.modifierBoutton = ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, command=self.modifierClient)
-        self.modifierBoutton.pack(side="right", padx=3, pady=3)
 
-        self.supprimerBoutton = ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, command=self.supprimer)
-        self.supprimerBoutton.pack(side="right", padx=3, pady=3)
 
         self.tabFrame.grid_columnconfigure(0, weight=1)
         self.tabFrame.grid_rowconfigure(1, weight=1)
@@ -52,7 +56,7 @@ class ClientPage(ctk.CTkFrame):
         style.configure("mystyle.Treeview", font=("Arial", 14))  # Augmenter la taille de la police
         style.configure("mystyle.Treeview.Heading", font=("Arial", 16, "bold"))  # Augmenter la taille de la police des titres
         style.configure("mystyle.Treeview", rowheight=30)  # Augmenter la hauteur des lignes
-        self.clientTab = tk.ttk.Treeview(self.tabFrame,style="mystyle.Treeview", columns=self.clientAttribue, show="headings")
+        self.clientTab = tk.ttk.Treeview(self.tabFrame, style="mystyle.Treeview", columns=self.clientAttribue, show="headings")
         
 
         for attribue in self.clientAttribue:
@@ -76,6 +80,8 @@ class ClientPage(ctk.CTkFrame):
         self.selecteur.pack(side="left", padx=2, pady=2)
         self.miseAJourTable()
 
+        self.wait_visibility()
+        self.grab_set()
 
     def recherche(self, event=None):
         critere = self.selecteur.get()
@@ -98,58 +104,16 @@ class ClientPage(ctk.CTkFrame):
             print(client.nom)
             self.clientTab.insert("", tk.END, values=(client.nom, client.prenom, client.telephone, client.addresse))
 
-        
-
-
-    def ajouterClient(self):
-        self.mode = "ajout"
-        self.wait_window(ClientForm(self, self.avoirInfo,  {}, self.mode))
-        if self.reponse:
-            if creerClient(employeId=self.controller.utilisateurCourant.id,
-                        nom=self.reponse["nom"],
-                        prenom=self.reponse["prenom"],
-                        telephone=self.reponse["telephone"],
-                        addresse=self.reponse["addresse"]
-                    ):
-                nouveau = obtenirClientparAttribue(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])
-                print(nouveau)
-                self.clientTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
-            #self.miseAJourTable()
-
-    def modifierClient(self):
-        selection = self.clientTab.selection()
-        if selection:
-            self.mode = "modification"
-            attribues = self.clientTab.item(selection)["values"]
-            print(selection)
-            print("selection[0]: ",selection[0])
-            client = { "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3]}
-            self.wait_window(ClientForm(self, self.avoirInfo,  client, self.mode))
-            if self.reponse:
-                if modifierClient(client_id=eval(selection[0]),
-                            nom=self.reponse["nom"],
-                            prenom=self.reponse["prenom"],
-                            telephone=self.reponse["telephone"],
-                            addresse=self.reponse["addresse"]
-                ):
-                    self.clientTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
-
-    def supprimer(self):
-        selection=self.clientTab.selection()
-        if selection:
-            supprimerClient(selection[0])
-            self.miseAJourTable()
-
-        
     def miseAJourTable(self):
         self.listeClient = obtenirClients()
         self.clientTab.delete(*self.clientTab.get_children())
         for client in self.listeClient:
             self.clientTab.insert("", tk.END, iid=client.id, values=(client.nom, client.prenom, client.telephone, client.addresse))
 
-    def avoirInfo(self, information):
-        self.reponse = information
-        print(self.reponse)
-
-
+    def valider(self):
+        selection = self.clientTab.selection()
+        if selection:
+            client = self.clientTab.item(selection[0], "values")
+            self.callback(client)
+            self.destroy()
 
