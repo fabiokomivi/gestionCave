@@ -12,3 +12,7 @@ venv/
 
 # Ignorer les fichiers de log
 *.log
+
+#ignore les dosssier
+/share
+/lib64
