@@ -25,22 +25,24 @@ def obtenirClients():
     session.close
     return clients
 
-def obtenirClientparAttribue(clientId=None, nom=None, prenom=None, telephone=None, addresse=None):
+def obtenirClientparAttribue(clientId=None, nom=None, prenom=None, telephone=None, addresse=None, tous=False):
     session = SessionLocal()
     query = session.query(Client)  # Commence par la base de la requête
     
     # Ajoute les filtres uniquement si les valeurs sont spécifiées
-    
-    if nom:
-        query = query.filter(Client.nom.ilike(f"%{nom}%"))
-    if prenom:
-        query = query.filter(Client.prenom.ilike(f"%{prenom}%"))
-    if telephone:
-        query = query.filter(Client.telephone.ilike(f"%{telephone}%"))
-    if addresse:
-        query = query.filter(Client.addresse.ilike(f"%{addresse}%"))
-    if clientId:
-        query = query.filter(Client.id == clientId)
+    if tous:
+        clients = query
+    else:
+        if nom:
+            query = query.filter(Client.nom.ilike(f"%{nom}%"))
+        if prenom:
+            query = query.filter(Client.prenom.ilike(f"%{prenom}%"))
+        if telephone:
+            query = query.filter(Client.telephone.ilike(f"%{telephone}%"))
+        if addresse:
+            query = query.filter(Client.addresse.ilike(f"%{addresse}%"))
+        if clientId:
+            query = query.filter(Client.id == clientId)
 
     clients = query.all()
     session.close()

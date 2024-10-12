@@ -211,7 +211,7 @@ if __name__ == "__main__":
     app = App()
     app.mainloop()
 """
-import tkinter as tk
+"""import tkinter as tk
 from tkinter import ttk
 from tkinter import PhotoImage
 
@@ -246,4 +246,71 @@ tree.insert("", "end", text="Item 2", image=img2, values=("Image 2"))
 tree.pack(pady=20)
 
 # Démarrer la boucle principale
-root.mainloop()
+root.mainloop()"""
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
+
+def creer_facture_pdf(commande, client, lignes_commandes):
+    # Chemin du fichier PDF
+    file_name = f"facture_{commande.id}.pdf"
+    
+    # Créer un fichier PDF
+    pdf = canvas.Canvas(file_name, pagesize=A4)
+    width, height = A4
+    
+    # Titre de la facture
+    pdf.setFont("Helvetica-Bold", 20)
+    pdf.drawString(100, 750, "FACTURE")
+    
+    # Informations du client
+    pdf.setFont("Helvetica", 12)
+    pdf.drawString(50, 700, f"Client : {client.nom} {client.prenom}")
+    pdf.drawString(50, 685, f"Adresse : {client.addresse}")
+    pdf.drawString(50, 670, f"Téléphone : {client.telephone}")
+    
+    # Informations de la commande
+    pdf.drawString(50, 640, f"Commande n° : {commande.id}")
+    pdf.drawString(50, 625, f"Date : {commande.dateCommande.strftime('%d/%m/%Y')}")
+
+    # Créer un tableau pour les lignes de commande
+    data = [["Produit", "Quantité", "Prix Unitaire", "Total"]]
+    
+    for ligne in lignes_commandes:
+        produit = ligne.boisson.nom
+        quantite = ligne.quantite
+        prix_unitaire = ligne.boisson.prix
+        total = quantite * prix_unitaire
+        data.append([produit, quantite, prix_unitaire, total])
+    
+    # Ajouter un total général
+    total_general = sum(ligne.quantite * ligne.boisson.prix for ligne in lignes_commandes)
+    data.append(["", "", "Total Général", total_general])
+    
+    # Créer un tableau avec les données
+    table = Table(data)
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black),
+    ]))
+    
+    # Définir la position du tableau
+    table.wrapOn(pdf, width, height)
+    table.drawOn(pdf, 50, 500)
+    
+    # Terminer le PDF
+    pdf.save()
+
+    print(f"Facture PDF générée : {file_name}")
+
+# Exemple d'appel
+# commande, client, et lignes_commandes doivent être des objets correspondant à ta base de données
+creer_facture_pdf(commande, client, lignes_commandes)
+

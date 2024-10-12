@@ -137,8 +137,9 @@ class ClientPage(ctk.CTkFrame):
     def supprimer(self):
         selection=self.clientTab.selection()
         if selection:
-            supprimerClient(selection[0])
-            self.miseAJourTable()
+            print(selection[0])
+            if supprimerClient(selection[0]):
+                self.clientTab.delete(selection)
 
         
     def miseAJourTable(self):
@@ -149,7 +150,6 @@ class ClientPage(ctk.CTkFrame):
 
     def avoirInfo(self, information):
         self.reponse = information
-        print(self.reponse)
 
 
 

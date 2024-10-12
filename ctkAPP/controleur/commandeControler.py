@@ -1,61 +1,53 @@
 from models.database import SessionLocal
 from models.commande import Commande
+from models.ligneCommande import LigneCommande
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
+from sqlalchemy import func
 
 # Créer une nouvelle commande
-def creer_commande(client_id, employe_id):
+def creerCommande(clientId, employeId):
     session = SessionLocal()  # Créer une session pour interagir avec la base de données
-    nouvelle_commande = Commande(clientId=client_id, employeId=employe_id)
-    
-    try:
-        session.add(nouvelle_commande)
-        session.commit()
-        session.refresh(nouvelle_commande)
-        return nouvelle_commande
-    except SQLAlchemyError as e:
-        session.rollback()
-        print(f"Erreur lors de la création de la commande: {str(e)}")
-        return None
-    finally:
-        session.close()
+    nouvelleCommande = Commande(clientId=clientId, employeId=employeId)
+
+    session.add(nouvelleCommande)
+    session.commit()
+    session.refresh(nouvelleCommande)
+
+    commande = session.query(Commande).options(joinedload(Commande.client)).get(nouvelleCommande.id)
+    session.close()
+    return commande
 
 # Obtenir toutes les commandes
-def obtenir_commandes():
+def obtenirCommandePar(commandeId=None, date=None, clientId=None,tous=False):
     session = SessionLocal()
-    
-    try:
-        commandes = session.query(Commande).all()
-        return commandes
-    except SQLAlchemyError as e:
-        print(f"Erreur lors de la récupération des commandes: {str(e)}")
-        return []
-    finally:
-        session.close()
 
-# Obtenir une commande par ID
-def obtenir_commande_par_id(commande_id):
-    session = SessionLocal()
-    
-    try:
-        commande = session.query(Commande).filter_by(id=commande_id).first()
-        return commande
-    except SQLAlchemyError as e:
-        print(f"Erreur lors de la récupération de la commande: {str(e)}")
-        return None
-    finally:
-        session.close()
+    commandes = session.query(Commande).options(joinedload(Commande.client),
+                                                joinedload(Commande.lignesCommande).joinedload(LigneCommande.boisson)
+                                                )
+    if tous:
+        commandes = commandes.all()
+    if commandeId:
+        commandes = commandes.filter(Commande.id==commandeId).first()
+    if date:
+        commandes = commandes.filter(func.date_trunc('second', Commande.dateCommande) == date).all()
+    if clientId:
+        commandes = commandes.filter(Commande.clientId==clientId).all()
+    session.close()
+    return commandes
+
 
 # Mettre à jour une commande
-def mettre_a_jour_commande(commande_id, client_id=None, employe_id=None):
+def mettre_a_jour_commande(commande_id, clientId=None, employeId=None):
     session = SessionLocal()
     
     try:
         commande = session.query(Commande).filter_by(id=commande_id).first()
         if commande:
-            if client_id:
-                commande.clientId = client_id
-            if employe_id:
-                commande.employeId = employe_id
+            if clientId:
+                commande.clientId = clientId
+            if employeId:
+                commande.employeId = employeId
             session.commit()
             return commande
         else:
@@ -69,7 +61,7 @@ def mettre_a_jour_commande(commande_id, client_id=None, employe_id=None):
         session.close()
 
 # Supprimer une commande
-def supprimer_commande(commande_id):
+def supprimerCommande(commande_id):
     session = SessionLocal()
     
     try:

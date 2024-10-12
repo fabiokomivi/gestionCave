@@ -29,12 +29,12 @@ class ConnexionPage(ctk.CTkFrame):
         self.userEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="utilisateur", height=50, width=300)
         self.userEntree.grid(row=1, column=0, padx=40, pady=(50, 10))
 
-        self.userEntree.insert(0, "toto")
+        self.userEntree.insert(0, "amouzou")
 
         self.mpdEntree = ctk.CTkEntry(self.connexionFrame, placeholder_text="mot de passe", show="*", height=50, width=300)
         self.mpdEntree.grid(row=2, column=0, padx=40, pady=(10, 50))
 
-        self.mpdEntree.insert(0, "employe1")
+        self.mpdEntree.insert(0, "fabio2002")
 
 
         self.bouttonCommit = ctk.CTkButton(self.connexionFrame,width=150, height=20, text="valider", fg_color="green", text_color="white",command=self.verification)
@@ -58,7 +58,7 @@ class ConnexionPage(ctk.CTkFrame):
             self.controller.utilisateurCourant=utilisateur
             self.controller.pagesSecondaire["gestions"].tkraise()
             if not utilisateur:
-                utilisateur = obtenirEmployePar(nom, motDePasse)
+                utilisateur = obtenirEmployePar(nom=nom, mdp=motDePasse)
                 self.controller.utilisateurCourant=utilisateur
                 self.controller.pagesSecondaire["pageEmploye"].tkraise()
             if utilisateur:

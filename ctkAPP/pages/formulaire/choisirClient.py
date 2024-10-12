@@ -113,7 +113,7 @@ class choixClient(ctk.CTkToplevel):
     def valider(self):
         selection = self.clientTab.selection()
         if selection:
-            client = self.clientTab.item(selection[0], "values")
+            client = obtenirClientparAttribue(clientId=selection[0])[0]
             self.callback(client)
             self.destroy()
 

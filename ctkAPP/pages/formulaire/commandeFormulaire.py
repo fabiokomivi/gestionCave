@@ -2,20 +2,25 @@ import customtkinter as ctk
 import tkinter as tk
 from tkinter import filedialog
 from controleur.boissonControler import *
+from controleur.commandeControler import *
+from controleur.ligneCommandeControler import * 
 from .erreur.erreur import erreur
 from PIL import Image
 import re
 from .choisirClient import choixClient
 from .choisirBoisson import choixBoisson
+from .erreur.erreur import erreur
 
 class commandeForm(ctk.CTkToplevel):
 
     commandeAttribue = ("nom", "prix unitaire", "quantite", "prix total")
-    client = None
+    clientCourant = None
     boissonsList = {}
 
-    def __init__(self, parent):
+    def __init__(self, parent, callback,controller):
         super().__init__(parent)
+        self.controller = controller
+        self.callback = callback
         self.geometry("800x500")
         self.title("commandes")
         self.grid_columnconfigure(0, weight=1)
@@ -61,7 +66,7 @@ class commandeForm(ctk.CTkToplevel):
         controlFrame.pack(side="top", padx=5, pady=5, fill="x")
         ctk.CTkButton  (controlFrame, text="ajouter", command=self.choisirBoisson).pack(side="left", padx=5, pady=5)
         ctk.CTkButton  (controlFrame, text="supprimer").pack(side="left", padx=5, pady=5)
-        ctk.CTkButton  (controlFrame, text="valider").pack(side="right", padx=5, pady=5)
+        ctk.CTkButton  (controlFrame, text="valider", command=self.valider).pack(side="right", padx=5, pady=5)
 
         style = tk.ttk.Style()
         style.configure("mystyle.Treeview", font=("Arial", 14))  # Augmenter la taille de la police
@@ -80,15 +85,28 @@ class commandeForm(ctk.CTkToplevel):
         self.wait_window(choixBoisson(self, self.avoirBoisson, self.boissonsList.keys()))
 
     def avoirClient(self, client):
-        self.client = client
-        self.labelNom.configure(text=client[0])
-        self.labelPrenom.configure(text=client[1])
-        self.labelTelephone.configure(text=client[2])
+        self.clientCourant = client
+        self.labelNom.configure(text=client.nom)
+        self.labelPrenom.configure(text=client.prenom)
+        self.labelTelephone.configure(text=client.telephone)
 
     def avoirBoisson(self, boisson, quantite):
         self.boissonsList[boisson.nom]=(boisson, quantite)
         self.ligneCommandeTab.insert("", tk.END, iid=boisson.id, values=(boisson.nom, boisson.prix, quantite, boisson.prix*quantite))
 
 
+    def valider(self):
+        if not self.clientCourant:
+            self.wait_window(erreur(self, "veuillez choisir un client"))
+        elif len(self.ligneCommandeTab.get_children())==0:
+            self.wait_window(erreur(self, "veuillez choisir une boisson"))
+        else:
+            commande = creerCommande(employeId=self.controller.utilisateurCourant.id, clientId=self.clientCourant.id)
+            for boissonNom in self.boissonsList.keys():
+                boissons = self.boissonsList[boissonNom]
+                AjouterLigneCommande(commande.id, boissons[0].id, boissons[1], prix=boissons[0].prix, prixTotal=boissons[0].prix*boissons[1])
+                mettreAjourBoisson(boissons[0].id, boissons[1])
+            self.callback(commande)
+            self.destroy()
 
 
