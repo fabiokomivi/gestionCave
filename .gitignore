@@ -1,3 +1,8 @@
+#tous les dossiers et fichier
+*
+**
+!ctkAPP
+!ctkAPP***
 # Ignorer les fichiers compilés Python
 __pycache__/
 *.py[cod]
