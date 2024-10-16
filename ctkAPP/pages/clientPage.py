@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
 from .formulaire.clientFormulaire import ClientForm
+from .formulaire.erreur.confirmation import Confirmation
 from controleur.clientControler import *
 
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
@@ -13,6 +14,8 @@ class ClientPage(ctk.CTkFrame):
     reponse = {}
     mode = ""
     listeClient = []
+    autoriserSuppression = False
+
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
@@ -74,17 +77,15 @@ class ClientPage(ctk.CTkFrame):
         self.rechercheEntree.bind("<KeyRelease>", self.recherche)
 
         self.selecteur.pack(side="left", padx=2, pady=2)
-        self.miseAJourTable()
+        self.miseAjour()
 
 
     def recherche(self, event=None):
         critere = self.selecteur.get()
         texteRechere = self.rechercheEntree.get()
-        print(*self.clientTab.get_children())
         self.clientTab.delete(*self.clientTab.get_children())
         match critere:
             case "id":
-                print(f"'{texteRechere}'")
                 self.listeClient = obtenirClientparAttribue(employeId=eval(texteRechere.strip()))
             case "nom":
                 self.listeClient = obtenirClientparAttribue(nom=texteRechere)
@@ -95,7 +96,6 @@ class ClientPage(ctk.CTkFrame):
             case "addresse":
                 self.listeClient = obtenirClientparAttribue(addresse=texteRechere)
         for client in self.listeClient:
-            print(client.nom)
             self.clientTab.insert("", tk.END, values=(client.nom, client.prenom, client.telephone, client.addresse))
 
         
@@ -112,18 +112,15 @@ class ClientPage(ctk.CTkFrame):
                         addresse=self.reponse["addresse"]
                     ):
                 nouveau = obtenirClientparAttribue(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])
-                print(nouveau)
                 self.clientTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
-            #self.miseAJourTable()
+
 
     def modifierClient(self):
         selection = self.clientTab.selection()
         if selection:
             self.mode = "modification"
             attribues = self.clientTab.item(selection)["values"]
-            print(selection)
-            print("selection[0]: ",selection[0])
-            client = { "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3]}
+            client = {"id":int(selection[0]), "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3]}
             self.wait_window(ClientForm(self, self.avoirInfo,  client, self.mode))
             if self.reponse:
                 if modifierClient(client_id=eval(selection[0]),
@@ -137,12 +134,14 @@ class ClientPage(ctk.CTkFrame):
     def supprimer(self):
         selection=self.clientTab.selection()
         if selection:
-            print(selection[0])
-            if supprimerClient(selection[0]):
-                self.clientTab.delete(selection)
+            message = "cette action supprimera toutes\nles commandes associees"
+            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
+            if self.autoriserSuppression:
+                if supprimerClient(selection[0]):
+                    self.clientTab.delete(selection)
 
         
-    def miseAJourTable(self):
+    def miseAjour(self):
         self.listeClient = obtenirClients()
         self.clientTab.delete(*self.clientTab.get_children())
         for client in self.listeClient:
@@ -150,6 +149,9 @@ class ClientPage(ctk.CTkFrame):
 
     def avoirInfo(self, information):
         self.reponse = information
+
+    def demandeAutorisation(self, permission):
+        self.autoriserSuppression = permission
 
 
 

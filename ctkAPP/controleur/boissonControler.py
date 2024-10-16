@@ -1,6 +1,12 @@
+from sqlalchemy import func
 from models.database import SessionLocal
 from models.boisson import Boisson
 from models.stock import Stock
+from models.categorie import Categorie
+
+
+from sqlalchemy.orm import joinedload
+
 
 
 def creerBoisson(nom, prix,  categorieId, image=""):
@@ -29,7 +35,7 @@ def obtenirBoissonParAttribue(boissonId="", nom="", prix=0, tous=False):
     if boissonId:
         boissons=boissons.filter(Boisson.id==boissonId)
     if prix:
-        boissons=boissons.filter(Boisson.prix==prix)
+        boissons=boissons.filter(Boisson.prix<=prix)
     if nom:
         boissons = boissons.filter(Boisson.nom.ilike(f"%{nom}%"))
     session.close
@@ -66,3 +72,28 @@ def mettreAjourBoisson(boissonId, quantite):
         boisson.stock.quantite -= int(quantite)
         session.commit()
     session.close()
+
+
+
+
+def obtenirBoissonsParCategorie():
+    # Requête pour obtenir le nom de la catégorie et le nombre de types de boissons par catégorie
+    session = SessionLocal()
+    resultats = (
+        session.query(Categorie.nom, func.count(Boisson.id))
+        .join(Boisson, Categorie.boissons)  # Liaison avec les boissons
+        .group_by(Categorie.nom)  # Grouper par catégorie
+        .all()
+    )
+    session.close()
+    
+    categories = [resultat[0] for resultat in resultats]  # Liste des noms de catégories
+    quantites = [resultat[1] for resultat in resultats]  # Liste des quantités de boissons par catégorie
+    return categories, quantites
+
+def obtenirQuantitesBoissons():
+    session = SessionLocal()
+    resultats = session.query(Boisson.nom, Stock.quantite).join(Stock).all()
+    session.close()
+    return zip(*resultats)  # Cela renvoie les noms et les quantités sous forme de deux listes
+

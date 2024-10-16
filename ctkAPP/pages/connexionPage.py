@@ -2,7 +2,9 @@ import time
 import customtkinter as ctk
 from controleur.chefControler import *
 from controleur.employeControler import *
+from.formulaire.premiereConnexion import PremiereConnexion
 import re
+from .formulaire.erreur.erreur import erreur
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class ConnexionPage(ctk.CTkFrame):
@@ -43,6 +45,8 @@ class ConnexionPage(ctk.CTkFrame):
         self.labelInfo = ctk.CTkLabel(self.connexionFrame, text="", height=100, width=30, font=ctk.CTkFont(family="Arial", size=15, weight="bold"))
         self.labelInfo.grid(row=4, column=0, padx=20, sticky="ew")
 
+        self.estPremiereConnexion()
+
     def verification(self):
         motDePasse = self.mpdEntree.get()
         nom = self.userEntree.get()
@@ -55,26 +59,30 @@ class ConnexionPage(ctk.CTkFrame):
             self.rougir(self.mpdEntree)
         else:
             utilisateur = obtenirChefPar(nom, motDePasse)
-            self.controller.utilisateurCourant=utilisateur
-            self.controller.pagesSecondaire["gestions"].tkraise()
-            if not utilisateur:
-                utilisateur = obtenirEmployePar(nom=nom, mdp=motDePasse)
-                self.controller.utilisateurCourant=utilisateur
-                self.controller.pagesSecondaire["pageEmploye"].tkraise()
+            
             if utilisateur:
-                self.labelInfo.configure(text="!! connexion reussie !!")
-                self.controller.chargerBoutonMenu()
-                time.sleep(1)
-                self.controller.utilisateurCourant = utilisateur
-                self.controller.changePage("contenu")
+                self.controller.utilisateurCourant=utilisateur
+                self.controller.wait_window(erreur(self.controller, "connexion reussie"))
+                self.controller.pagesPrimaire["contenu"].tkraise()
+                self.controller.pagesSecondaire["gestions"].tkraise()
             else:
-                self.labelInfo.configure(text="!! utilisateur n'existe pas !!")
-
+                utilisateur = obtenirEmployePar(nom=nom, mdp=motDePasse)
+                if utilisateur:
+                    self.controller.utilisateurCourant=utilisateur[0]
+                    self.controller.wait_window(erreur(self.controller, "connexion reussie"))
+                    self.controller.pagesPrimaire["contenu"].tkraise()
+                    self.controller.pagesSecondaire["pageEmploye"].tkraise()
+                else:
+                    self.controller.wait_window(erreur(self.controller, "connexion echouée"))
+    
     def rougir(self, widget):
         widget.configure(fg_color = "red")
         self.after(1500, lambda:self.blanchir(widget))
 
     def blanchir(self, widget):
         widget.configure(fg_color="white")
+
+    def estPremiereConnexion(self):
+        self.wait_window(PremiereConnexion(self.controller, None))
 
         

@@ -14,6 +14,7 @@ class boissonForm(ctk.CTkToplevel):
     def __init__(self, parent, callback, mode, categories,information):
         super().__init__(parent)
 
+        self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
         self.callback=callback
         self.mode = mode
         self.information=information
@@ -109,7 +110,8 @@ class boissonForm(ctk.CTkToplevel):
 
     def blanchir(self, widget):
         widget.configure(fg_color="white")
-   
+        
 
-
-"""boissonForm(ctk.CTk(), None, None, {"nom": "coca cola", "prix": 500})"""
+    def fermetureAnormale(self):
+        self.callback(None)
+        self.destroy()

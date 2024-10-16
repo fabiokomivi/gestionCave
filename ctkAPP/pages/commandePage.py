@@ -80,7 +80,7 @@ class CommandePage(ctk.CTkFrame):
         self.rechercheEntree.bind("<KeyRelease>", self.recherche)
 
         self.selecteur.pack(side="left", padx=2, pady=2)
-        self.chargerCommandes()
+        self.miseAjour()
 
     def ajouterCommande(self):
         self.wait_window(commandeForm(self, self.avoirCommande, self.controller))
@@ -94,7 +94,7 @@ class CommandePage(ctk.CTkFrame):
             montant += ligneCommande.prix*ligneCommande.quantite
         self.commandeTab.insert("", tk.END, iid=commande.id, values=(client.nom, client.prenom, client.telephone, commande.dateCommande.strftime('%H:%M %d/%m/%Y'), montant)) 
         
-    def chargerCommandes(self):
+    def miseAjour(self):
         commandes = obtenirCommandePar(tous=True)
         for commande in commandes:
             client = commande.client
@@ -109,7 +109,6 @@ class CommandePage(ctk.CTkFrame):
         self.commandeTab.delete(*self.commandeTab.get_children())
         match critere:
             case "id":
-                print(f"'{texteRechere}'")
                 clients = obtenirClientparAttribue(employeId=eval(texteRechere.strip()))
             case "nom":
                 clients = obtenirClientparAttribue(nom=texteRechere)

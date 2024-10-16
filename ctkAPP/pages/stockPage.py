@@ -69,9 +69,9 @@ class StockPage(ctk.CTkFrame):
         self.rechercheEntree.bind("<KeyRelease>", self.recherche)
 
         self.selecteur.pack(side="left", padx=2, pady=2)
-        self.miseAJour()
+        self.miseAjour()
 
-    def miseAJour(self):
+    def miseAjour(self):
         stocks = obtenirStock()
         self.stockTab.delete(*self.stockTab.get_children())
         for stock in stocks:
@@ -88,7 +88,6 @@ class StockPage(ctk.CTkFrame):
                 if ajouterStock(stock.id, self.reponse):
                     stock = obtenirStockPar(stockId=selection[0])
                     self.stockTab.item(selection[0], values=(boisson.nom, stock.quantite))
-            #print(stock)
 
     def recherche(self, event=None):
         critere = self.selecteur.get()
@@ -107,7 +106,7 @@ class StockPage(ctk.CTkFrame):
                         boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)[0]
                         self.stockTab.insert("", tk.END, iid=stock.id, values=(boisson.nom, stock.quantite))
                 else:
-                    self.miseAJour()
+                    self.miseAjour()
 
     def avoirInfo(self, information):
         self.reponse=information

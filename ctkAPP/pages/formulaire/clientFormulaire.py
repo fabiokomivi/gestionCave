@@ -14,11 +14,13 @@ class ClientForm(ctk.CTkToplevel):
     numeroPattern = r"[0-9]{8}"
     nomPattern = r"[a-zA-Z]"
 
-    def __init__(self,controller, callback, dico, mode):
+    def __init__(self,controller, callback, infoClient, mode):
         super().__init__(controller)
         self.geometry("500x400")
+        self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
         self.callback = callback
         self.mode = mode
+        self.infoClient = infoClient
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
@@ -39,11 +41,11 @@ class ClientForm(ctk.CTkToplevel):
         self.entreeTelephone = ctk.CTkEntry(self.contenu, placeholder_text="telephone", width=200)
         self.entreeAddresse = ctk.CTkEntry(self.contenu, placeholder_text="addresse", width=200)
 
-        if dico:
-            self.entreeNom.insert(0, dico["nom"])
-            self.entreePrenom.insert(0, dico["prenom"])
-            self.entreeTelephone.insert(0, dico["telephone"])
-            self.entreeAddresse.insert(0, dico["addresse"])
+        if infoClient:
+            self.entreeNom.insert(0, infoClient["nom"])
+            self.entreePrenom.insert(0, infoClient["prenom"])
+            self.entreeTelephone.insert(0, infoClient["telephone"])
+            self.entreeAddresse.insert(0, infoClient["addresse"])
 
         self.entreeNom.grid(row=0, column=0, pady=(30, 5))
         self.entreePrenom.grid(row=1, column=0, pady=(5, 5))
@@ -86,7 +88,18 @@ class ClientForm(ctk.CTkToplevel):
                 else:
                     self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse})
                     self.destroy()
-            else:
+            elif self.mode=="modification":
+
+                for client in obtenirClientparAttribue(telephone=telephone):
+                    if (client.id!=self.infoClient["id"]) and (client.telephone==telephone):
+                        self.wait_window(erreur(self, "un client possede deja ce numero"))
+                        return
+                    
+                for client in obtenirClientparAttribue(addresse=addresse):
+                    if client.id!=self.infoClient["id"] and client.addresse==addresse:
+                        self.wait_window(erreur(self, "un client possede deja cet addresse"))
+                        return
+                    
                 self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse})
                 self.destroy()
 
@@ -102,6 +115,6 @@ class ClientForm(ctk.CTkToplevel):
         self.destroy()
 
 
-        
-
-#ClientForm(None, {"nom": "fabio", "prenom": "fabio", "telephone": "fabio", "addresse": "addresse"})
+    def fermetureAnormale(self):
+        self.callback(None)
+        self.destroy()

@@ -14,6 +14,6 @@ class Employe(MODEL):
     chefId = Column(Integer, ForeignKey('Chefs.id'))
     chef = relationship("Chef", back_populates="employes")
 
-    clients = relationship("Client", back_populates="employe")
+    clients = relationship("Client", back_populates="employe", cascade="all, delete-orphan")
 
-    commandes = relationship("Commande", back_populates="employe")
+    commandes = relationship("Commande", back_populates="employe", cascade="all, delete-orphan")

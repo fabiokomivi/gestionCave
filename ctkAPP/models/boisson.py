@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, LargeBinary
+from sqlalchemy import  Column, String, Integer, ForeignKey, LargeBinary
 from sqlalchemy.orm import relationship
 from .base import MODEL
 

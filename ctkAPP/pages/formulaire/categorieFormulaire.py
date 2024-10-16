@@ -14,6 +14,7 @@ class categorieForm(ctk.CTkToplevel):
     def __init__(self,controller, callback, dico, mode):
         super().__init__(controller)
         self.geometry("500x400")
+        self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
         self.callback = callback
         self.mode = mode
         
@@ -88,3 +89,6 @@ class categorieForm(ctk.CTkToplevel):
         self.destroy()
 
 
+    def fermetureAnormale(self):
+        self.callback(None)
+        self.destroy()

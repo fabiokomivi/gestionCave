@@ -3,6 +3,7 @@ import tkinter as tk
 from controleur.categorieControler import *
 from controleur.boissonControler import *
 from .formulaire.boissonFormulaire import boissonForm
+from .formulaire.erreur.confirmation import Confirmation
 import io
 from PIL import Image
 
@@ -10,9 +11,10 @@ ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/m
 
 class BoissonPage(ctk.CTkFrame):
 
-    boissonAttribue = ("nom", "prix", "categorie", "disponibilité")
+    boissonAttribue = ("nom", "prix", "categorie")
     mode = ""
     reponse = {}
+    autoriserSuppression = False
 
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -39,7 +41,7 @@ class BoissonPage(ctk.CTkFrame):
 
         self.boissonTab.grid(row=1, column=0, columnspan=3, sticky="nsew")
 
-        self.chargerBoissons()
+        self.miseAjour()
 
 
     def initMenu(self):
@@ -64,7 +66,7 @@ class BoissonPage(ctk.CTkFrame):
         rechercheFramne.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(rechercheFramne, text="recherche").grid(column=0, row=0)
-        self.selecteur = ctk.CTkComboBox(rechercheFramne, values=("nom", "prix", "disponibilité"))
+        self.selecteur = ctk.CTkComboBox(rechercheFramne, values=("nom", "prix"))
         self.rechercher = ctk.CTkEntry(rechercheFramne)
 
         self.rechercher.bind("<KeyRelease>", self.recherche)
@@ -138,8 +140,11 @@ class BoissonPage(ctk.CTkFrame):
     def supprimerBoisson(self):
         selection = self.boissonTab.selection()
         if selection:
-            if supprimerBoisson(selection[0]):
-                self.boissonTab.delete(selection[0])
+            message = "cette action supprimera toutes\nles commandes unitaires associees"
+            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
+            if self.autoriserSuppression:
+                if supprimerBoisson(selection[0]):
+                    self.boissonTab.delete(selection[0])
 
     def avoirCategories(self):
         categories = obtenirCategorieParAttribue(tous=True)
@@ -148,7 +153,8 @@ class BoissonPage(ctk.CTkFrame):
             liste.append(categorie.nom)
         return liste
 
-    def chargerBoissons(self):
+    def miseAjour(self):
+        self.boissonTab.delete(*self.boissonTab.get_children())
         boissons = obtenirBoissonParAttribue(tous=True)
         for boisson in boissons:
             self.boissonTab.insert("", tk.END, iid=boisson.id, values=(boisson.nom, boisson.prix, boisson.categorie.nom))
@@ -159,3 +165,6 @@ class BoissonPage(ctk.CTkFrame):
             image = Image.open(fluxImage)
             ctkImgae = ctk.CTkImage(light_image=image, dark_image=image, size=image.size)
             return ctkImgae
+        
+    def demandeAutorisation(self, permission):
+        self.autoriserSuppression = permission

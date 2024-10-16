@@ -8,4 +8,4 @@ class Categorie(MODEL):
     nom = Column(String, nullable=False)
     description = Column(String)
 
-    boissons = relationship("Boisson", back_populates="categorie")
+    boissons = relationship("Boisson", back_populates="categorie", cascade="all, delete-orphan")

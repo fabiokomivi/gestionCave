@@ -17,7 +17,7 @@ def obtenirStockPar(stockId="", quantite=""):
     if stockId:
         stock = stocks.filter(Stock.id==stockId).first()
     if quantite:
-        stock = stocks.filter(Stock.quantite==quantite).all()
+        stock = stocks.filter(Stock.quantite<=quantite).all()
 
     session.close()
     return stock

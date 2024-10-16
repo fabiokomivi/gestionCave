@@ -14,4 +14,11 @@ class Commande(MODEL):
     employeId = Column(Integer, ForeignKey("Employes.id"))
     employe = relationship("Employe", back_populates="commandes")
 
-    lignesCommande = relationship("LigneCommande", back_populates="commande")
+    lignesCommande = relationship("LigneCommande", back_populates="commande", cascade="all, delete-orphan")
+
+    def prixTotal(self):
+        return sum(ligne.prixTotal for ligne in self.lignesCommande)
+    
+    def avoirJourMoisAnnee(self):
+        return self.dateCommande.day, self.dateCommande.month, self.dateCommande.year
+        

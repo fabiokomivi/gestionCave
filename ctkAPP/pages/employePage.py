@@ -3,7 +3,10 @@ import tkinter as tk
 from PIL import Image
 from controleur.employeControler import *
 from .formulaire.employeFormulaire import employeForm
+from .formulaire.erreur.confirmation import Confirmation
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+
+
 class EmployePage(ctk.CTkFrame):
 
 
@@ -76,9 +79,10 @@ class EmployePage(ctk.CTkFrame):
         self.rechercheEntree.bind("<KeyRelease>", self.recherche)
 
         self.selecteur.pack(side="left", padx=2, pady=2)
-        self.miseAJourTable()
+        self.miseAjour()
 
     def ajouterEmploye(self):
+        self.mode = "ajout"
         self.wait_window(employeForm(self, self.avoirInfo, None, self.mode))
         if self.reponse:
             creerEmploye(self.controller.utilisateurCourant.id,
@@ -96,7 +100,7 @@ class EmployePage(ctk.CTkFrame):
         if selection:
             self.mode = "modification"
             attribues = self.employeTab.item(selection)["values"]
-            employe = { "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3], "mdp": attribues[4]}
+            employe = {"id":int(selection[0]), "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3], "mdp": attribues[4]}
             self.wait_window(employeForm(self, self.avoirInfo,  employe, self.mode))
             if self.reponse:
                 if modifierEmploye(employeId=eval(selection[0]),
@@ -111,9 +115,8 @@ class EmployePage(ctk.CTkFrame):
 
     def avoirInfo(self, information):
         self.reponse = information
-        print(self.controller.utilisateurCourant.id)
 
-    def miseAJourTable(self):
+    def miseAjour(self):
         employes = obtenirEmploye()
         if employes:
             self.employeTab.delete(*self.employeTab.get_children())
@@ -123,7 +126,6 @@ class EmployePage(ctk.CTkFrame):
     def recherche(self, event=None):
         critere = self.selecteur.get()
         texteRechere = self.rechercheEntree.get()
-        print(*self.employeTab.get_children())
         self.employeTab.delete(*self.employeTab.get_children())
         employes=None
         match critere:
@@ -136,12 +138,16 @@ class EmployePage(ctk.CTkFrame):
             case "addresse":
                 employes = obtenirEmployePar(addresse=texteRechere)
         for employe in employes:
-            print(employe.nom)
             self.employeTab.insert("", tk.END, iid=employe.id, values=(employe.nom, employe.prenom, employe.telephone, employe.addresse, employe.motDePasse))
 
     def supprimerEmploye(self):
         selection=self.employeTab.selection()
         if selection:
-            print(selection[0])
-            if supprimerEmploye(selection[0]):
-                self.employeTab.delete(selection)
+            message = "cette action supprimera toutes\nles clients et commandes \nassociees"
+            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
+            if self.autoriserSuppression:
+                if supprimerEmploye(selection[0]):
+                    self.employeTab.delete(selection)
+
+    def demandeAutorisation(self, permission):
+        self.autoriserSuppression = permission

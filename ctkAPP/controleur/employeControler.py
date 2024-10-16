@@ -1,5 +1,7 @@
 from models.database import SessionLocal
+from sqlalchemy.orm import joinedload
 from models.employe import Employe
+from models.commande import Commande
 
 
 def creerEmploye(chefId, nom, prenom, telephone, addresse, motDePasse ):
@@ -8,7 +10,7 @@ def creerEmploye(chefId, nom, prenom, telephone, addresse, motDePasse ):
     session.commit()
     session.close()
 
-def obtenirEmployePar(nom=None, prenom=None, telephone=None, addresse=None):
+def obtenirEmployePar(nom=None, prenom=None, telephone=None, addresse=None, mdp=None):
     session = SessionLocal()
     try:
         query = session.query(Employe)
@@ -22,6 +24,8 @@ def obtenirEmployePar(nom=None, prenom=None, telephone=None, addresse=None):
             query = query.filter(Employe.nom.ilike(f"%{nom}%"))
         if prenom:
             query = query.filter(Employe.prenom.ilike(f"%{prenom}%"))
+        if mdp:
+            query = query.filter(Employe.motDePasse==mdp)
         
         employes = query.all()
         return employes
@@ -30,11 +34,21 @@ def obtenirEmployePar(nom=None, prenom=None, telephone=None, addresse=None):
         session.close()
 
 
+from sqlalchemy.orm import joinedload
+
 def obtenirEmploye():
     session = SessionLocal()
-    employes = session.query(Employe).all()
+    employes = (
+        session.query(Employe)
+        .options(
+            joinedload(Employe.commandes)
+            .joinedload(Commande.lignesCommande)  # Remplace 'lignecommande' par le nom correct de la relation
+        )
+        .all()
+    )
     session.close()
     return employes
+
 
 def modifierEmploye(employeId, nom=None, prenom=None, telephone=None, addresse=None, mdp=None):
     # Ouvrir une session

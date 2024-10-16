@@ -13,10 +13,11 @@ class employeForm(ctk.CTkToplevel):
     nomPattern = r"[a-zA-Z]"
     mpdPattern = r"[a-zA-Z0-9]"
 
-    def __init__(self, parent, callback, information, mode):
+    def __init__(self, parent, callback, infoEmploye, mode):
         super().__init__(parent)
+        self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
         self.callback = callback
-        self.information = information
+        self.infoEmploye = infoEmploye
         self.mode = mode
 
         self.grid_columnconfigure(0, weight=1)
@@ -40,7 +41,7 @@ class employeForm(ctk.CTkToplevel):
         topFrame.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         bottomFrame.grid(row=1, column=0, sticky="ew", padx=3, pady=3)
 
-        ctk.CTkButton(bottomFrame, text="annuler", fg_color="red").pack(side="left", padx=5, pady=3)
+        ctk.CTkButton(bottomFrame, text="annuler", fg_color="red", command=self.destroy).pack(side="left", padx=5, pady=3)
         ctk.CTkButton(bottomFrame, text="valider", fg_color="green", command=self.verification).pack(side="right", padx=5, pady=3)
 
         self.entreeNom = ctk.CTkEntry(topFrame, placeholder_text="nom")
@@ -49,12 +50,12 @@ class employeForm(ctk.CTkToplevel):
         self.entreeAddresse = ctk.CTkEntry(topFrame, placeholder_text="addresse")
         self.entreeMDP = ctk.CTkEntry(topFrame, placeholder_text="mot de passe")
 
-        if self.information:
-            self.entreeNom.insert(0, self.information["nom"])
-            self.entreePrenom.insert(0, self.information["prenom"])
-            self.entreeTelephone.insert(0, self.information["telephone"])
-            self.entreeAddresse.insert(0, self.information["addresse"])
-            self.entreeMDP.insert(0, self.information["mdp"])
+        if self.infoEmploye:
+            self.entreeNom.insert(0, self.infoEmploye["nom"])
+            self.entreePrenom.insert(0, self.infoEmploye["prenom"])
+            self.entreeTelephone.insert(0, self.infoEmploye["telephone"])
+            self.entreeAddresse.insert(0, self.infoEmploye["addresse"])
+            self.entreeMDP.insert(0, self.infoEmploye["mdp"])
 
         self.entreeNom.pack(side="top", padx=10, pady=3, fill="x")
         self.entreePrenom.pack(side="top", padx=10, pady=3, fill="x")
@@ -86,9 +87,21 @@ class employeForm(ctk.CTkToplevel):
                 elif obtenirEmployePar(addresse=addresse):
                     self.wait_window(erreur(self, "un employe possede deja cet addresse"))
                 else:
+                    print("toto")
                     self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse, "mdp": mdp})
                     self.destroy()
-            else:
+            elif self.mode=="modification":
+
+                for employe in obtenirEmployePar(telephone=telephone):
+                    if (employe.id!=self.infoEmploye["id"]) and (employe.telephone==telephone):
+                        self.wait_window(erreur(self, "un employe possede deja ce numero"))
+                        return
+                    
+                for employe in obtenirEmployePar(addresse=addresse):
+                    if employe.id!=self.infoEmploye["id"] and employe.addresse==addresse:
+                        self.wait_window(erreur(self, "un employe possede deja cet addresse"))
+                        return
+                    
                 self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse, "mdp": mdp})
                 self.destroy()
 
@@ -98,3 +111,8 @@ class employeForm(ctk.CTkToplevel):
 
     def blanchir(self, widget):
         widget.configure(fg_color="white")
+
+
+    def fermetureAnormale(self):
+        self.callback(None)
+        self.destroy()

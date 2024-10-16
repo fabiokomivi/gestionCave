@@ -2,6 +2,7 @@ import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
 from .formulaire.categorieFormulaire import categorieForm
+from .formulaire.erreur.confirmation import Confirmation
 from controleur.categorieControler import *
 
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
@@ -12,6 +13,7 @@ class CategoriePage(ctk.CTkFrame):
     rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
     reponse = {}
     mode = ""
+    autoriserSuppression = False
     listeCategorie = []
 
     def __init__(self, parent, controller):
@@ -79,7 +81,7 @@ class CategoriePage(ctk.CTkFrame):
         self.rechercheEntree.bind("<KeyRelease>", self.recherche)
 
         self.selecteur.pack(side="left", padx=2, pady=2)
-        self.miseAJourTable()
+        self.miseAjour()
 
     
     def recherche(self, event=None):
@@ -87,7 +89,6 @@ class CategoriePage(ctk.CTkFrame):
         texteRechere = self.rechercheEntree.get()
         match critere:
             case "id":
-                print(f"'{texteRechere}'")
                 self.listeCategorie = obtenirCategorieParAttribue (employeId=eval(texteRechere.strip()), tous=False)
             case "nom":
                 self.listeCategorie = obtenirCategorieParAttribue (nom=texteRechere, tous=False)
@@ -95,7 +96,6 @@ class CategoriePage(ctk.CTkFrame):
                 self.listeCategorie = obtenirCategorieParAttribue (description=texteRechere, tous=False)
         self.categorieTab.delete(*self.categorieTab.get_children())
         for categorie in self.listeCategorie:
-            print(categorie.nom)
             self.categorieTab.insert("", tk.END, values=(categorie.nom, categorie.description))
 
         
@@ -110,7 +110,6 @@ class CategoriePage(ctk.CTkFrame):
                         description=self.reponse["description"]
                     ):
                 nouveau = obtenirCategorieParAttribue (nom=self.reponse["nom"], description=self.reponse["description"], tous=False, categorieId="")
-                print(nouveau)
                 self.categorieTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["description"]))
 
 
@@ -131,11 +130,14 @@ class CategoriePage(ctk.CTkFrame):
     def supprimerCategorie(self):
         selection=self.categorieTab.selection()
         if selection:
-            supprimerCategorie(selection[0])
-            self.miseAJourTable()
+            message = "cette action supprimera toutes\nles boissons associees"
+            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
+            if self.autoriserSuppression:
+                supprimerCategorie(selection[0])
+                self.categorieTab.delete(selection[0])
 
         
-    def miseAJourTable(self):
+    def miseAjour(self):
         self.listeCategorie = obtenirCategorieParAttribue(tous=True, categorieId="", description="", nom="")
         self.categorieTab.delete(*self.categorieTab.get_children())
         for categorie in self.listeCategorie:
@@ -143,7 +145,6 @@ class CategoriePage(ctk.CTkFrame):
 
     def avoirInfo(self, information):
         self.reponse = information
-        print(self.reponse)
 
 
 
@@ -154,3 +155,5 @@ class CategoriePage(ctk.CTkFrame):
         self.categorieTab.column("description", width=int(largeur_totale * 3 / 4))
 
 
+    def demandeAutorisation(self, permission):
+        self.autoriserSuppression = permission

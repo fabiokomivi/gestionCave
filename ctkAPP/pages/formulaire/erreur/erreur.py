@@ -1,7 +1,7 @@
 import customtkinter as ctk
 
 class erreur(ctk.CTkToplevel):
-    def __init__(self, parent, message):
+    def __init__(self, parent, message, furtif=True):
         super().__init__(parent)
         parent.update_idletasks()  # Assure que la géométrie est à jour
         frame = ctk.CTkFrame(self)
@@ -11,5 +11,5 @@ class erreur(ctk.CTkToplevel):
         self.wait_visibility()
 
         self.grab_set()
-
-        self.after(3000, self.destroy)
+        if furtif:
+            self.after(3000, self.destroy)
