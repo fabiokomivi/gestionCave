@@ -1,23 +1,25 @@
-#tous les dossiers et fichier
+# Ignorer tous les fichiers et dossiers par défaut
 *
-**
-!ctkAPP
-!ctkAPP***
-# Ignorer les fichiers compilés Python
-__pycache__/
-*.py[cod]
-bin/
 
-# Ignorer les environnements virtuels
+# Ne pas ignorer le dossier ctkAPP
+!ctkAPP/
+!ctkAPP/**
+
+# Ignorer l'environnement virtuel (par exemple si c'est dans un dossier venv ou .venv)
 venv/
+.venv/
 
-# Ignorer les fichiers de configuration des IDE
+# Ignorer les fichiers spécifiques à Python
+*.pyc
+__pycache__/
+
+# Ignorer les fichiers de configuration spécifiques à l'IDE
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
 
-# Ignorer les fichiers de log
-*.log
-
-#ignore les dosssier
-/share
-/lib64
+# Ignorer les fichiers liés à la gestion des dépendances
+Pipfile
+Pipfile.lock
+requirements.txt
