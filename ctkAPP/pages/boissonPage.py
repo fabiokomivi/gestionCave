@@ -4,6 +4,7 @@ from controleur.categorieControler import *
 from controleur.boissonControler import *
 from .formulaire.boissonFormulaire import boissonForm
 from .formulaire.erreur.confirmation import Confirmation
+from .formulaire.erreur.erreur import erreur
 import io
 from PIL import Image
 
@@ -15,9 +16,12 @@ class BoissonPage(ctk.CTkFrame):
     mode = ""
     reponse = {}
     autoriserSuppression = False
+    boissonDefautPath = "ctkAPP/images/boissonDefaut.png"
+    boissonDefautImage = ctk.CTkImage(light_image=Image.open(boissonDefautPath), dark_image=Image.open(boissonDefautPath), size=(70, 150))
 
     def __init__(self, parent, controller):
         super().__init__(parent)
+        
         self.controller = controller
         self.grid_rowconfigure(0, minsize=200)
         self.grid_rowconfigure(1, weight=1)
@@ -57,9 +61,9 @@ class BoissonPage(ctk.CTkFrame):
             controlFrame.grid_rowconfigure(i, weight=1)
         controlFrame.grid_columnconfigure(0, weight=1)
 
-        ctk.CTkButton(controlFrame, text="nouveau", width=100, command=self.ajouterBoisson).grid(row=0, column=0)
-        ctk.CTkButton(controlFrame, text="modifier", width=100, command=self.modifierBoisson).grid(row=1, column=0)
-        ctk.CTkButton(controlFrame, text="supprimer", width=100, command=self.supprimerBoisson).grid(row=2, column=0)
+        ctk.CTkButton(controlFrame, text="nouveau", width=100, fg_color="green", command=self.ajouterBoisson).grid(row=0, column=0)
+        ctk.CTkButton(controlFrame, text="modifier", width=100, fg_color="#00AA00", command=self.modifierBoisson).grid(row=1, column=0)
+        ctk.CTkButton(controlFrame, text="supprimer", width=100, fg_color="red", command=self.supprimerBoisson).grid(row=2, column=0)
 
         for i in range(3):
             rechercheFramne.grid_rowconfigure(i, weight=1)
@@ -85,9 +89,12 @@ class BoissonPage(ctk.CTkFrame):
         selection = self.boissonTab.selection()
         if selection:
             id = selection[0]
-            boisson=obtenirBoissonParAttribue(tous=False, boissonId=id)[0]
+            boisson=obtenirBoissonParAttribue(tous=False, boissonId=id)
             self.labelVisuel.configure(image=self.bitVersImage(boisson.image))
-            self.labelVisuel.image=self.bitVersImage(boisson.image)
+            if boisson.image:
+                self.labelVisuel.image=self.bitVersImage(boisson.image)
+            else:
+                self.labelVisuel.configure(image=self.boissonDefautImage)
 
         
 
@@ -95,8 +102,7 @@ class BoissonPage(ctk.CTkFrame):
         self.reponse=dico
 
     def ajouterBoisson(self):
-        self.mode = "ajout"
-        self.wait_window(boissonForm(self.controller, self.avoirInfo, self.mode, self.avoirCategories(),{}))
+        self.wait_window(boissonForm(self.controller, self.avoirInfo, False, self.avoirCategories(),{}))
         if self.reponse:
             categorie = obtenirCategorieParAttribue(tous=False, nom=self.reponse["categorie"])
             categorieId = categorie[0].id
@@ -108,18 +114,19 @@ class BoissonPage(ctk.CTkFrame):
 
 
     def modifierBoisson(self):
-        self.mode = "modification"
         selection = self.boissonTab.selection()
         if selection:
-            boisson = obtenirBoissonParAttribue(tous=False, boissonId=selection[0])[0]
+            boisson = obtenirBoissonParAttribue(tous=False, boissonId=selection[0])
             dicoDonnees = {"id": boisson.id, "nom": boisson.nom, "prix": boisson.prix, "categorie": boisson.categorie.nom, "image": self.bitVersImage(boisson.image)}
-            self.wait_window(boissonForm(self.controller, self.avoirInfo, self.mode, self.avoirCategories(),dicoDonnees))
+            self.wait_window(boissonForm(self.controller, self.avoirInfo, True, self.avoirCategories(),dicoDonnees))
             if self.reponse:
 
                 categorie = obtenirCategorieParAttribue(tous=False, nom=self.reponse["categorie"])[0]
 
                 if modifierBoisson(boissonId=boisson.id, nom=self.reponse["nom"],prix=self.reponse["prix"], categorieId=categorie.id, image=self.reponse["image"]):
                     self.boissonTab.item(selection[0], values=(self.reponse["nom"], self.reponse["prix"], self.reponse["categorie"]))
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune boisson"))
 
 
     def recherche(self, event=None):
@@ -145,6 +152,9 @@ class BoissonPage(ctk.CTkFrame):
             if self.autoriserSuppression:
                 if supprimerBoisson(selection[0]):
                     self.boissonTab.delete(selection[0])
+                    self.labelVisuel.configure(image=self.boissonDefautImage)
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune boisson"))
 
     def avoirCategories(self):
         categories = obtenirCategorieParAttribue(tous=True)
@@ -154,6 +164,8 @@ class BoissonPage(ctk.CTkFrame):
         return liste
 
     def miseAjour(self):
+        if self.grid_info():
+            self.controller.title("boisson")
         self.boissonTab.delete(*self.boissonTab.get_children())
         boissons = obtenirBoissonParAttribue(tous=True)
         for boisson in boissons:

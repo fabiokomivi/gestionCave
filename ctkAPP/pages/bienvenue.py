@@ -6,9 +6,14 @@ class BienvenuePage(ctk.CTkFrame):
     def __init__(self, parent, controller):
         super().__init__(parent, fg_color="white")
         ctk.CTkLabel(self, text="", width=300, image=self.vinImage).grid(row=0, column=0, sticky="nsew")
+        self.controller= controller
 
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
+    
+    def miseAjour(self):
+        if self.grid_info():
+            self.controller.title("bienvenu")
 
 
 

@@ -12,6 +12,8 @@ class stockForm(ctk.CTkToplevel):
     def __init__(self, parent, callback, information):
         super().__init__(parent)
         self.geometry("360x160")
+        self.resizable(False, False)
+        self.centreFenetre()
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
 
         self.callback=callback
@@ -38,7 +40,7 @@ class stockForm(ctk.CTkToplevel):
         
         confirmationFrame= ctk.CTkFrame(topFrame)
         confirmationFrame.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
-        ctk.CTkButton(confirmationFrame, text="annuler", fg_color="red", command=self.destroy).pack(side="left", padx=10, pady=5)
+        ctk.CTkButton(confirmationFrame, text="annuler", fg_color="red", command=self.fermetureAnormale).pack(side="left", padx=10, pady=5)
         ctk.CTkButton(confirmationFrame, text="valider", fg_color="green", command=self.verification).pack(side="right", padx=10, pady=5)
 
         self.wait_visibility()
@@ -63,3 +65,17 @@ class stockForm(ctk.CTkToplevel):
     def blanchir(self, widget):
         widget.configure(fg_color="white")
    
+    def centreFenetre(self):
+
+        pere_x = self.master.winfo_x()
+        pere_y = self.master.winfo_y()
+        pere_largeur = self.master.winfo_width()
+        pere_hauter = self.master.winfo_height()
+
+        enfant_largeur = self.winfo_reqwidth()
+        enfant_hauteur = self.winfo_reqheight()
+
+        position_x = pere_x + (pere_largeur // 2) - (enfant_largeur // 2)
+        position_y = pere_y + (pere_hauter // 2) - (enfant_hauteur // 2)
+
+        self.geometry(f"+{position_x}+{position_y}")

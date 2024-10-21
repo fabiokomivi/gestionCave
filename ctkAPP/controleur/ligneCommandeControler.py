@@ -10,27 +10,30 @@ def AjouterLigneCommande(commandeId, boissonId, quantite, prix, prixTotal):
 
 
 
-def RecupererLigneCommandeParId(ligneCommandeId):
+def obtenirLigneCommandeParId(ligneCommandeId):
     session = SessionLocal()
-    ligneCommande = session.query(LigneCommande).filter_by(Id=ligneCommandeId).first()
+    ligneCommande = session.query(LigneCommande).filter(LigneCommande.id==ligneCommandeId).first()
+    session.close()
     return ligneCommande
 
 
-def ModifierLigneCommande(ligneCommandeId, nouvelleQuantite=None, nouveauPrixUnitaire=None):
+def ModifierLigneCommande(ligneCommandeId, nouvelleQuantite=None):
+    ans = False
     session = SessionLocal()
-    ligneCommande = session.query(LigneCommande).filter_by(Id=ligneCommandeId).first()
+    ligneCommande = session.query(LigneCommande).filter(LigneCommande.id==ligneCommandeId).first()
     if ligneCommande:
-        if nouvelleQuantite is not None:
-            ligneCommande.Quantite = nouvelleQuantite
-        if nouveauPrixUnitaire is not None:
-            ligneCommande.PrixUnitaire = nouveauPrixUnitaire
+        ligneCommande.quantite = nouvelleQuantite
+        ligneCommande.prixTotal = ligneCommande.prix*nouvelleQuantite
         session.commit()
+        ans = True
+    session.close()
+    return ans
 
 
 
 def SupprimerLigneCommande(ligneCommandeId):
     session = SessionLocal()
-    ligneCommande = session.query(LigneCommande).filter_by(Id=ligneCommandeId).first()
+    ligneCommande = session.query(LigneCommande).filter(LigneCommande.id==ligneCommandeId).first()
     if ligneCommande:
         session.delete(ligneCommande)
         session.commit()

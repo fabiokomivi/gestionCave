@@ -4,6 +4,7 @@ from PIL import Image
 from controleur.stockControler import *
 from controleur.boissonControler import *
 from .formulaire.stockFormulaire import stockForm
+from .formulaire.erreur.erreur import erreur
 import re
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
 class StockPage(ctk.CTkFrame):
@@ -31,11 +32,8 @@ class StockPage(ctk.CTkFrame):
         self.menu.grid(row=1, column=0, sticky="ew", padx=5, pady=(5, 5))
         self.tabFrame.grid(row=2, column=0, sticky="nsew", padx=5, pady=(5, 5))
 
-        self.frameGauche = ctk.CTkFrame(self.menu, height=50)
-        self.frameGauche.pack(side="left", padx=3, pady=3)
-
-        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="ajouter", command=self.ajouter, height=35, width=50)
-        self.nouveauBoutton.pack(side="left", padx=3, pady=3)
+        self.nouveauBoutton = ctk.CTkButton(self.menu, text="ajouter", command=self.ajouter, height=35, fg_color="green")
+        self.nouveauBoutton.pack(side="right", padx=10, pady=3)
 
         self.tabFrame.grid_columnconfigure(0, weight=1)
         self.tabFrame.grid_rowconfigure(1, weight=1)
@@ -72,22 +70,26 @@ class StockPage(ctk.CTkFrame):
         self.miseAjour()
 
     def miseAjour(self):
+        if self.grid_info():
+            self.controller.title("stock")
         stocks = obtenirStock()
         self.stockTab.delete(*self.stockTab.get_children())
         for stock in stocks:
-            boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)[0]
+            boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)
             self.stockTab.insert("", tk.END, iid=stock.id, values=(boisson.nom, stock.quantite))
 
     def ajouter(self):
         selection = self.stockTab.selection()
         if selection:
             stock = obtenirStockPar(stockId=selection[0])
-            boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)[0]
-            self.wait_window(stockForm(self, self.avoirInfo, boisson.nom))
+            boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)
+            self.wait_window(stockForm(self.controller, self.avoirInfo, boisson.nom))
             if self.reponse:
                 if ajouterStock(stock.id, self.reponse):
                     stock = obtenirStockPar(stockId=selection[0])
                     self.stockTab.item(selection[0], values=(boisson.nom, stock.quantite))
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune boisson"))
 
     def recherche(self, event=None):
         critere = self.selecteur.get()
@@ -103,10 +105,12 @@ class StockPage(ctk.CTkFrame):
                     stocks = obtenirStockPar(quantite=int(texteRechere))
                     self.stockTab.delete(*self.stockTab.get_children())
                     for stock in stocks:
-                        boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)[0]
+                        boisson = obtenirBoissonParAttribue(boissonId=stock.boissonId)
                         self.stockTab.insert("", tk.END, iid=stock.id, values=(boisson.nom, stock.quantite))
                 else:
                     self.miseAjour()
 
     def avoirInfo(self, information):
         self.reponse=information
+
+    

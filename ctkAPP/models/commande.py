@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import Enum, Column, String, Integer, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from .base import MODEL
 from datetime import datetime, timezone
@@ -13,6 +13,7 @@ class Commande(MODEL):
 
     employeId = Column(Integer, ForeignKey("Employes.id"))
     employe = relationship("Employe", back_populates="commandes")
+    etat = Column(Enum('validée', 'en attente', name='etat_commande'), nullable=False, default='en attente')
 
     lignesCommande = relationship("LigneCommande", back_populates="commande", cascade="all, delete-orphan")
 

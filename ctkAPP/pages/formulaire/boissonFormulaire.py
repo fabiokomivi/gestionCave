@@ -13,13 +13,15 @@ class boissonForm(ctk.CTkToplevel):
 
     def __init__(self, parent, callback, mode, categories,information):
         super().__init__(parent)
-
+        self.geometry("360x280")
+        self.resizable(False, False)
+        self.centreFenetre()
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
         self.callback=callback
         self.mode = mode
         self.information=information
 
-        self.title(mode)
+        self.title("ajout boisson" if not mode else "modification boisson")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         topFrame = ctk.CTkFrame(self)
@@ -47,7 +49,7 @@ class boissonForm(ctk.CTkToplevel):
         
         confirmationFrame= ctk.CTkFrame(topFrame)
         confirmationFrame.grid(row=4, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
-        ctk.CTkButton(confirmationFrame, text="annuler", fg_color="red", command=self.destroy).pack(side="left", padx=10, pady=5)
+        ctk.CTkButton(confirmationFrame, text="annuler", fg_color="red", command=self.infoTaille).pack(side="left", padx=10, pady=5)
         ctk.CTkButton(confirmationFrame, text="valider", fg_color="green", command=self.verification).pack(side="right", padx=10, pady=5)
 
         if information:
@@ -71,7 +73,7 @@ class boissonForm(ctk.CTkToplevel):
         elif not re.match(self.patternPrix, prix):
             self.rougir(self.entreePrix)
         else:
-            if self.mode == "modification":
+            if self.mode:
                 boissons = obtenirBoissonParAttribue(tous=True)
                 for boisson in boissons:
                     if boisson.id!=self.information["id"] and boisson.nom==nom:
@@ -81,7 +83,7 @@ class boissonForm(ctk.CTkToplevel):
                 reponse = {"nom": nom, "prix": prix, "categorie": categorie, "image": self.imageBinaire}
                 self.callback(reponse)
                 self.destroy()
-            elif self.mode == "ajout":
+            else :
                 boissons = obtenirBoissonParAttribue(tous=True)
                 for boisson in boissons:
                     if boisson.nom==nom:
@@ -115,3 +117,21 @@ class boissonForm(ctk.CTkToplevel):
     def fermetureAnormale(self):
         self.callback(None)
         self.destroy()
+
+    def centreFenetre(self):
+
+            pere_x = self.master.winfo_x()
+            pere_y = self.master.winfo_y()
+            pere_largeur = self.master.winfo_width()
+            pere_hauter = self.master.winfo_height()
+
+            enfant_largeur = self.winfo_reqwidth()
+            enfant_hauteur = self.winfo_reqheight()
+
+            position_x = pere_x + (pere_largeur // 2) - (enfant_largeur // 2)
+            position_y = pere_y + (pere_hauter // 2) - (enfant_hauteur // 2)
+
+            self.geometry(f"+{position_x}+{position_y}")
+
+    def infoTaille(self):
+        print(f"{self.winfo_width()}, {self.winfo_height()}")

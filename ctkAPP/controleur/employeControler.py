@@ -2,6 +2,7 @@ from models.database import SessionLocal
 from sqlalchemy.orm import joinedload
 from models.employe import Employe
 from models.commande import Commande
+from sqlalchemy.orm import joinedload
 
 
 def creerEmploye(chefId, nom, prenom, telephone, addresse, motDePasse ):
@@ -10,31 +11,33 @@ def creerEmploye(chefId, nom, prenom, telephone, addresse, motDePasse ):
     session.commit()
     session.close()
 
-def obtenirEmployePar(nom=None, prenom=None, telephone=None, addresse=None, mdp=None):
+def obtenirEmployePar(id=None, nom=None, prenom=None, telephone=None, addresse=None, mdp=None, connexion=False):
     session = SessionLocal()
     try:
-        query = session.query(Employe)
-        
-        if telephone:
-            query = query.filter(Employe.telephone.ilike(f"%{telephone}%"))
-        
-        if addresse:
-            query = query.filter(Employe.addresse.ilike(f"%{addresse}%"))
-        if nom:
-            query = query.filter(Employe.nom.ilike(f"%{nom}%"))
-        if prenom:
-            query = query.filter(Employe.prenom.ilike(f"%{prenom}%"))
-        if mdp:
-            query = query.filter(Employe.motDePasse==mdp)
-        
-        employes = query.all()
-        return employes
-
+        employes = session.query(Employe)
+        if id:
+            employes = employes.filter(Employe.id==id).first()
+        else:
+            if telephone:
+                employes = employes.filter(Employe.telephone.ilike(f"%{telephone}%"))
+            
+            if addresse:
+                employes = employes.filter(Employe.addresse.ilike(f"%{addresse}%"))
+            if nom:
+                employes = employes.filter(Employe.nom==nom) if connexion else\
+                    employes.filter(Employe.nom.ilike(f"%{nom}%"))
+            if prenom:
+                employes = employes.filter(Employe.prenom==prenom) if connexion else\
+                    employes.filter(Employe.prenom.ilike(f"%{prenom}%"))
+            if mdp:
+                employes = employes.filter(Employe.motDePasse==mdp)
+            
+            employes = employes.all()
     finally:
         session.close()
+        return employes
+        
 
-
-from sqlalchemy.orm import joinedload
 
 def obtenirEmploye():
     session = SessionLocal()

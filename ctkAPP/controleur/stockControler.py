@@ -31,4 +31,9 @@ def ajouterStock(stockId, quantite=0):
     session.close()
     return True
 
+def obtenirStockParBoisson(boissonId):
+    session = SessionLocal()
+    stock = session.query(Stock).filter(Stock.boissonId==boissonId).first()
+    session.close()
+    return stock
 

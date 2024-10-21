@@ -3,6 +3,7 @@ import tkinter as tk
 from PIL import Image
 from .formulaire.categorieFormulaire import categorieForm
 from .formulaire.erreur.confirmation import Confirmation
+from .formulaire.erreur.erreur import erreur
 from controleur.categorieControler import *
 
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
@@ -18,6 +19,7 @@ class CategoriePage(ctk.CTkFrame):
 
     def __init__(self, parent, controller):
         super().__init__(parent)
+        
         self.controller = controller
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
@@ -36,15 +38,9 @@ class CategoriePage(ctk.CTkFrame):
         self.frameGauche = ctk.CTkFrame(self.menu, height=50)
         self.frameGauche.pack(side="left", padx=3, pady=3)
 
-        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, command=self.ajouterCategorie)
-        self.nouveauBoutton.pack(side="left", padx=3, pady=3)
-
-        self.modifierBoutton = ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, command=self.modifierCategorie)
-        self.modifierBoutton.pack(side="right", padx=3, pady=3)
-
-        self.supprimerBoutton = ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, command=self.supprimerCategorie)
-        self.supprimerBoutton.pack(side="right", padx=3, pady=3)
-
+        ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, fg_color="green", command=self.ajouterCategorie).pack(side="left", padx=3, pady=3)
+        ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, fg_color="#00AA00", command=self.modifierCategorie).pack(side="right", padx=3, pady=3)
+        ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, fg_color="red", command=self.supprimerCategorie).pack(side="right", padx=3, pady=3)
 
         self.tabFrame.grid_columnconfigure(0, weight=1)
         self.tabFrame.grid_rowconfigure(1, weight=1)
@@ -59,7 +55,7 @@ class CategoriePage(ctk.CTkFrame):
 
         self.categorieTab = tk.ttk.Treeview(self.tabFrame,style="mystyle.Treeview", columns=self.categorieAttribue, show="headings")
 
-        self.categorieTab.bind("<Configure>", self.ajuster)
+        self.categorieTab.bind("<Configure>", self.ajusterCategorieTab)
         
 
         for attribue in self.categorieAttribue:
@@ -103,7 +99,7 @@ class CategoriePage(ctk.CTkFrame):
 
     def ajouterCategorie(self):
         self.mode = "ajout"
-        self.wait_window(categorieForm(self, self.avoirInfo,  {}, self.mode))
+        self.wait_window(categorieForm(self.controller, self.avoirInfo,  {}, mode=False))
         if self.reponse:
             if creerCategorie(
                         nom=self.reponse["nom"],
@@ -116,16 +112,17 @@ class CategoriePage(ctk.CTkFrame):
     def modifierCategorie(self):
         selection = self.categorieTab.selection()
         if selection:
-            self.mode = "modification"
             attribues = self.categorieTab.item(selection)["values"]
             categorie = { "nom": attribues[0], "description": attribues[1]}
-            self.wait_window(categorieForm(self, self.avoirInfo,  categorie, self.mode))
+            self.wait_window(categorieForm(self.controller, self.avoirInfo,  categorie, mode=True))
             if self.reponse:
                 if modifierCategorie(categorieId=eval(selection[0]),
                             nom=self.reponse["nom"],
                             description=self.reponse["description"]
                 ):
                     self.categorieTab.item(selection, values=(self.reponse["nom"], self.reponse["description"]))
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune categorie"))
 
     def supprimerCategorie(self):
         selection=self.categorieTab.selection()
@@ -135,9 +132,13 @@ class CategoriePage(ctk.CTkFrame):
             if self.autoriserSuppression:
                 supprimerCategorie(selection[0])
                 self.categorieTab.delete(selection[0])
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune categorie"))
 
         
     def miseAjour(self):
+        if self.grid_info():
+            self.controller.title("categorie")
         self.listeCategorie = obtenirCategorieParAttribue(tous=True, categorieId="", description="", nom="")
         self.categorieTab.delete(*self.categorieTab.get_children())
         for categorie in self.listeCategorie:
@@ -148,7 +149,7 @@ class CategoriePage(ctk.CTkFrame):
 
 
 
-    def ajuster(self, event):
+    def ajusterCategorieTab(self, event):
         largeur_totale = self.categorieTab.winfo_width()
         # Proportion : 1/3 pour "Nom" et 2/3 pour "Catégorie"
         self.categorieTab.column("nom", width=int(largeur_totale * 1 / 4))

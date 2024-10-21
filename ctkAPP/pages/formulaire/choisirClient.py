@@ -14,11 +14,12 @@ class choixClient(ctk.CTkToplevel):
     mode = ""
     listeClient = []
 
-    def __init__(self, parent,callback):
+    def __init__(self, parent, commande):
         super().__init__(parent)
-
-        self.callback = callback
-
+        self.commandeTmp = commande
+        self.protocol("WM_DELETE_WINDOW", self.annuler)
+        self.geometry("800x450")
+        self.resizable(False, False)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
@@ -38,11 +39,10 @@ class choixClient(ctk.CTkToplevel):
         self.menu.grid(row=1, column=0, sticky="ew", padx=5, pady=(5, 5))
         self.tabFrame.grid(row=2, column=0, sticky="nsew", padx=5, pady=(5, 5))
 
-        self.frameGauche = ctk.CTkFrame(self.menu, height=50)
-        self.frameGauche.pack(side="left", padx=3, pady=3)
+        
 
-        self.selectionBoutton = ctk.CTkButton(self.frameGauche, text="selectionner", height=35, width=50, command=self.valider)
-        self.selectionBoutton.pack(side="left", padx=3, pady=3)
+        ctk.CTkButton(self.menu, fg_color="green", text="selectionner", height=35, width=50, command=self.valider).pack(side="right", padx=3, pady=3)
+        ctk.CTkButton(self.menu, fg_color="red", text="annuler", height=35, width=50, command=self.annuler).pack(side="left", padx=3, pady=3)
 
 
 
@@ -113,7 +113,11 @@ class choixClient(ctk.CTkToplevel):
     def valider(self):
         selection = self.clientTab.selection()
         if selection:
-            client = obtenirClientparAttribue(clientId=selection[0])[0]
-            self.callback(client)
+            client = obtenirClientparAttribue(clientId=selection[0])
+            self.commandeTmp.clientId=client.id
             self.destroy()
+        
+    def annuler(self):
+        self.destroy()
+
 

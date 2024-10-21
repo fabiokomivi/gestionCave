@@ -39,29 +39,14 @@ def obtenirCommandePar(commandeId=None, date=None, clientId=None,tous=False):
     session.close()
     return commandes
 
-
-# Mettre à jour une commande
-def mettre_a_jour_commande(commande_id, clientId=None, employeId=None):
+def validerCommande(commandeId=None):
     session = SessionLocal()
-    
-    try:
-        commande = session.query(Commande).filter_by(id=commande_id).first()
-        if commande:
-            if clientId:
-                commande.clientId = clientId
-            if employeId:
-                commande.employeId = employeId
-            session.commit()
-            return commande
-        else:
-            print(f"Commande avec ID {commande_id} introuvable.")
-            return None
-    except SQLAlchemyError as e:
-        session.rollback()
-        print(f"Erreur lors de la mise à jour de la commande: {str(e)}")
-        return None
-    finally:
-        session.close()
+    commande = session.query(Commande).filter(Commande.id==commandeId).first()
+    if commande:
+        commande.etat="validée"
+        session.commit()
+    session.close()
+
 
 # Supprimer une commande
 def supprimerCommande(commande_id):
@@ -74,11 +59,9 @@ def supprimerCommande(commande_id):
             session.commit()
             return True
         else:
-            print(f"Commande avec ID {commande_id} introuvable.")
             return False
     except SQLAlchemyError as e:
         session.rollback()
-        print(f"Erreur lors de la suppression de la commande: {str(e)}")
         return False
     finally:
         session.close()
@@ -94,11 +77,10 @@ def obtenirVentesParCategorie():
     
     categories = [resultat[0] for resultat in resultats]
     ventes = [resultat[1] for resultat in resultats]
-    
     return categories, ventes
 
 
-def obtenirVentesParBoisson():
+def obtenirVentesParPrixBoisson():
     # Connexion à la base de données et récupération des données
     session = SessionLocal()
     resultats = session.query(Boisson.nom, func.sum(LigneCommande.prixTotal)).\
@@ -110,6 +92,19 @@ def obtenirVentesParBoisson():
     ventes = [resultat[1] for resultat in resultats]
     
     return boissons, ventes
+
+def obtenirVentesParQuantiteBoisson():
+    # Connexion à la base de données et récupération des données
+    session = SessionLocal()
+    resultats = session.query(Boisson.nom, func.sum(LigneCommande.quantite)).\
+                join(LigneCommande, LigneCommande.boissonId == Boisson.id).\
+                group_by(Boisson.nom).all()
+    session.close()
+    
+    boissons = [resultat[0] for resultat in resultats]
+    quantites = [resultat[1] for resultat in resultats]
+    
+    return boissons, quantites
 
 def obtenirVenteParEmployes():
     session = SessionLocal()

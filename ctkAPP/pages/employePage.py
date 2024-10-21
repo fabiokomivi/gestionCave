@@ -4,6 +4,7 @@ from PIL import Image
 from controleur.employeControler import *
 from .formulaire.employeFormulaire import employeForm
 from .formulaire.erreur.confirmation import Confirmation
+from .formulaire.erreur.erreur import erreur
 ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
 
 
@@ -36,14 +37,14 @@ class EmployePage(ctk.CTkFrame):
         self.frameGauche = ctk.CTkFrame(self.menu, height=50)
         self.frameGauche.pack(side="left", padx=3, pady=3)
 
-        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, command=self.ajouterEmploye)
-        self.nouveauBoutton.pack(side="left", padx=3, pady=3)
+        ctk.CTkButton(self.frameGauche, text="nouveau", fg_color="green", height=35, width=50, command=self.ajouterEmploye)\
+        .pack(side="left", padx=3, pady=3)
 
-        self.modifierBoutton = ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, command=self.modifierEmploye)
-        self.modifierBoutton.pack(side="right", padx=3, pady=3)
+        ctk.CTkButton(self.frameGauche, text="modifier", fg_color="#00AA00", height=35, width=50, command=self.modifierEmploye)\
+        .pack(side="right", padx=3, pady=3)
 
-        self.supprimerBoutton = ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, command=self.supprimerEmploye)
-        self.supprimerBoutton.pack(side="right", padx=3, pady=3)
+        ctk.CTkButton(self.menu, text="supprimer", fg_color="red", height=35, width=50, command=self.supprimerEmploye)\
+        .pack(side="right", padx=3, pady=3)
 
         self.tabFrame.grid_columnconfigure(0, weight=1)
         self.tabFrame.grid_rowconfigure(1, weight=1)
@@ -81,9 +82,10 @@ class EmployePage(ctk.CTkFrame):
         self.selecteur.pack(side="left", padx=2, pady=2)
         self.miseAjour()
 
+
     def ajouterEmploye(self):
         self.mode = "ajout"
-        self.wait_window(employeForm(self, self.avoirInfo, None, self.mode))
+        self.wait_window(employeForm(self.controller, self.avoirInfo, None, False))
         if self.reponse:
             creerEmploye(self.controller.utilisateurCourant.id,
                         self.reponse["nom"],
@@ -98,10 +100,9 @@ class EmployePage(ctk.CTkFrame):
     def modifierEmploye(self):
         selection = self.employeTab.selection()
         if selection:
-            self.mode = "modification"
             attribues = self.employeTab.item(selection)["values"]
             employe = {"id":int(selection[0]), "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3], "mdp": attribues[4]}
-            self.wait_window(employeForm(self, self.avoirInfo,  employe, self.mode))
+            self.wait_window(employeForm(self.controller, self.avoirInfo,  employe, True))
             if self.reponse:
                 if modifierEmploye(employeId=eval(selection[0]),
                             nom=self.reponse["nom"],
@@ -111,12 +112,15 @@ class EmployePage(ctk.CTkFrame):
                             mdp=self.reponse["mdp"]
                 ):
                     self.employeTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"], self.reponse["mdp"]))
-
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun employe"))
 
     def avoirInfo(self, information):
         self.reponse = information
 
     def miseAjour(self):
+        if self.grid_info():
+            self.controller.title("employe")
         employes = obtenirEmploye()
         if employes:
             self.employeTab.delete(*self.employeTab.get_children())
@@ -148,6 +152,10 @@ class EmployePage(ctk.CTkFrame):
             if self.autoriserSuppression:
                 if supprimerEmploye(selection[0]):
                     self.employeTab.delete(selection)
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun employe"))
 
     def demandeAutorisation(self, permission):
         self.autoriserSuppression = permission
+
+    

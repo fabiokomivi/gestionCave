@@ -10,6 +10,8 @@ from pages.boissonPage import BoissonPage
 from pages.employePage import EmployePage
 from pages.stockPage import StockPage
 from pages.dashboardPage import DashboardPage
+from pages.formulaire.premiereConnexion import PremiereConnexion
+from controleur.chefControler import *
 
 from pages.bienvenue import BienvenuePage
 from pages.connexionPage import ConnexionPage
@@ -41,80 +43,68 @@ class APP(ctk.CTk):
     stockImagePath = "ctkAPP/images/stock.png"
     categorieImagePath = "ctkAPP/images/categorie.png"
 
-
     pagesPrimaire = {}
     pagesSecondaire = {}
     pagesEmploye = {}
     pagesChef = {}
+
     utilisateurType = ""
     utilisateurCourant = None
+    chef = {}
 
 
 
     def __init__(self):
         super().__init__()
 
-        
-
         self.geometry("1200x650")
         self.minsize(1100, 650)
-        self.title("CustomTkinter Application")
+        self.title("bienvenu")
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        self.initRootContent()
-        
-        self.after(1000, self.remplaceBienvenue)
-        self.mainloop()
-
-    def initMenu(self):
-        self.menu = ctk.CTkFrame(self.contentMain, width=200)
-        self.menu.grid_columnconfigure(0, weight=1)
-        self.menu.grid_propagate(False)
-        self.menu.grid(row=0, column=0, sticky="nsew")
-
-        ctk.CTkLabel(self.menu, text="menu").grid(row=0, column=0, padx=5, sticky="ew", pady=(10, 15))
-
-        menuItem(self.menu, self, "clients", self.clientImagePath, 1)
-        menuItem(self.menu, self, "commandes", self.commandImagePath, 2)
-        menuItem(self.menu, self, "gestions", self.bossImagePath, 3)
-        menuItem(self.menu, self, "parametres", self.settingImagePath, 4)
-        menuItem(self.menu, self, "quitter", self.exitImagePath, 5)
-
-    
-    def initRootContent(self):
-        
+        # creation du conteneur supreme
         self.root=ctk.CTkFrame(self)  #creation de la fenetre root
         self.root.grid(row=0, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
+
+        # chargement des differentes pages
+        self.chargerPagePrimaire()
+        self.chargerPageSecondaire()
+        self.chargerPageEmploye()
+        self.chargerPageGestion()
+
+        self.estPremiereConnexion()
+        self.after(1000, self.remplaceBienvenue)
+        self.mainloop()
+    
+    def chargerPagePrimaire(self):
         self.pagesPrimaire["bienvenue"] = BienvenuePage(self.root, self)
         self.pagesPrimaire["connexion"] = ConnexionPage(self.root, self)
         self.pagesPrimaire["contenu"] = ContentPage(self.root, self)
+
         for pagePrimaire in self.pagesPrimaire.values():
             pagePrimaire.grid(row=0, column=0, sticky="nsew")
+
+        self.pagesPrimaire["bienvenue"].miseAjour()
         self.pagesPrimaire["bienvenue"].tkraise()
 
         
+    def chargerPageSecondaire(self):
         self.pagesSecondaire["pageEmploye"] = ctk.CTkFrame(self.pagesPrimaire["contenu"])
         self.pagesSecondaire["gestions"] = ctk.CTkFrame(self.pagesPrimaire["contenu"])
-        for pageSecondaire in self.pagesSecondaire.values():
 
+        for pageSecondaire in self.pagesSecondaire.values():
             pageSecondaire.grid_columnconfigure(0, weight=0)
             pageSecondaire.grid_columnconfigure(1, weight=1)
             pageSecondaire.grid_rowconfigure(0, weight=1)
 
             pageSecondaire.grid(row=0, column=0, columnspan=2, sticky="nsew")
 
-        # menu employe
-        self.menuEmploye = ctk.CTkFrame(self.pagesSecondaire["pageEmploye"], width=200)
-        self.menuEmploye.grid_columnconfigure(0, weight=1)
-        self.menuEmploye.grid_propagate(False)
-        self.menuEmploye.grid(row=0, column=0, sticky="ns")
 
-        ctk.CTkLabel(self.menuEmploye, text="menu", font=ctk.CTkFont(family="Arial", size=25, weight="bold")).pack(pady=(10, 15))
-        self.chargerBoutonMenuEmploye()
-
+    def chargerPageEmploye(self):
+        self.chargerMenuEmploye()
         self.employeContenu=ctk.CTkFrame(self.pagesSecondaire["pageEmploye"])
         self.employeContenu.grid(row=0, column=1, sticky="nsew")
         self.employeContenu.grid_columnconfigure(0, weight=1)
@@ -128,15 +118,8 @@ class APP(ctk.CTk):
         self.pagesEmploye["clients"].tkraise()
 
 
-        #menu chef
-        self.menuChef = ctk.CTkFrame(self.pagesSecondaire["gestions"], width=200)
-        self.menuChef.grid_columnconfigure(0, weight=1)
-        self.menuChef.grid_propagate(False)
-        self.menuChef.grid(row=0, column=0, sticky="ns")
-
-        ctk.CTkLabel(self.menuChef, text="menu", font=ctk.CTkFont(family="Arial", size=25, weight="bold")).pack(pady=(10, 15))
-        self.chargerBoutonMenuChef()
-
+    def chargerPageGestion(self):
+        self.chargerMenuGestion()
         self.chefContenu=ctk.CTkFrame(self.pagesSecondaire["gestions"])
         self.chefContenu.grid_columnconfigure(0, weight=1)
         self.chefContenu.grid_rowconfigure(0, weight=1)
@@ -149,28 +132,49 @@ class APP(ctk.CTk):
         self.pagesChef["dashboard"] = DashboardPage(self.chefContenu, self)
         for gestions in self.pagesChef.values():
             gestions.grid(row=0, column=0, sticky="nsew")
+
         self.pagesChef["dashboard"].tkraise()
 
-        """if self.utilisateurType=="employe":
-            self.pagesSecondaire["pageEmploye"].tkraise()  #mise en premier plan de la page des employes
-        elif self.utilisateurType=="chef":
-            self.pagesSecondaire["gestions"].tkraise()"""
+    def chargerMenuEmploye(self):
+        self.menuEmploye = ctk.CTkFrame(self.pagesSecondaire["pageEmploye"], width=200)
+        self.menuEmploye.grid_columnconfigure(0, weight=1)
+        self.menuEmploye.grid_propagate(False)
+        self.menuEmploye.grid(row=0, column=0, sticky="ns")
 
-    
-    def chargerBoutonMenuEmploye(self):
-        menuItem(self.menuEmploye, self, "clients", self.clientImagePath).pack(padx=3, pady=3, fill="x")
-        menuItem(self.menuEmploye, self, "commandes", self.commandImagePath).pack(padx=3,pady=3, fill="x")
-        menuItem(self.menuEmploye, self, "parametres", self.settingImagePath).pack(padx=3,pady=3, fill="x")
-        menuItem(self.menuEmploye, self, "quitter", self.exitImagePath).pack(padx=3, pady=3, side="bottom", fill="x")
+        ctk.CTkLabel(self.menuEmploye, text="menu", font=ctk.CTkFont(family="Arial", size=25, weight="bold"))\
+            .pack(pady=(10, 15))
+        menuItem(self.menuEmploye, self, "clients", self.clientImagePath)\
+            .pack(padx=3, pady=3, fill="x")
+        menuItem(self.menuEmploye, self, "commandes", self.commandImagePath)\
+            .pack(padx=3,pady=3, fill="x")
+        menuItem(self.menuEmploye, self, "parametres", self.settingImagePath)\
+            .pack(padx=3,pady=3, fill="x")
+        menuItem(self.menuEmploye, self, "quitter", self.exitImagePath)\
+            .pack(padx=3, pady=3, side="bottom", fill="x")
 
-    def chargerBoutonMenuChef(self):
-        menuItem(self.menuChef, self, "dashboard", self.dashboardImagePath).pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "categories", self.categorieImagePath).pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "boissons", self.boissonImagePath).pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "stock", self.stockImagePath).pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "employes", self.employeImagePath).pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "parametres", self.settingImagePath).pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "quitter", self.exitImagePath).pack(side="bottom", padx=5, pady=3, fill="x")
+    def chargerMenuGestion(self):
+        self.menuChef = ctk.CTkFrame(self.pagesSecondaire["gestions"], width=200)
+        self.menuChef.grid_columnconfigure(0, weight=1)
+        self.menuChef.grid_propagate(False)
+        self.menuChef.grid(row=0, column=0, sticky="ns")
+
+        ctk.CTkLabel(self.menuChef, text="menu", font=ctk.CTkFont(family="Arial", size=25, weight="bold"))\
+            .pack(pady=(10, 15))
+        menuItem(self.menuChef, self, "dashboard", self.dashboardImagePath)\
+            .pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "categories", self.categorieImagePath)\
+            .pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "boissons", self.boissonImagePath)\
+            .pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "stock", self.stockImagePath)\
+            .pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "employes", self.employeImagePath)\
+            .pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "parametres", self.settingImagePath)\
+            .pack(side="top", padx=5, pady=3, fill="x")
+        menuItem(self.menuChef, self, "quitter", self.exitImagePath)\
+            .pack(side="bottom", padx=5, pady=3, fill="x")
+        
 
 
     def setTheme(self):
@@ -202,21 +206,41 @@ class APP(ctk.CTk):
     
     def changePage(self, pageName):
         if pageName == "quitter":
+            self.pagesPrimaire["connexion"].miseAjour()
             self.pagesPrimaire["connexion"].tkraise()
+
         elif pageName in self.pagesPrimaire.keys():
-            self.pagesPrimaire[pageName].tkraise()
+            self.pagesPrimaire["connexion"].miseAjour()
+            self.pagesPrimaire["connexion"].tkraise()
+
+
         elif pageName in self.pagesSecondaire.keys():
             self.pagesSecondaire[pageName].tkraise()
+            self.title("")
+
         elif pageName in self.pagesEmploye.keys():
+            self.pagesEmploye[pageName].miseAjour()
             self.pagesEmploye[pageName].tkraise()
+
+
         elif pageName in self.pagesChef.keys():
             self.pagesChef[pageName].miseAjour()
             self.pagesChef[pageName].tkraise()
-        print(f"changing page to {pageName}")
+
 
     def remplaceBienvenue(self):
-        time.sleep(1)
         self.changePage("connexion")
+
+    def estPremiereConnexion(self):
+        if not obtenirChefs():
+            self.wait_window(PremiereConnexion(self, self.avoirInfo))
+            if self.chef:
+                creerChef(*self.chef.values())
+            else:
+                self.destroy()
+
+    def avoirInfo(self, chef):
+        self.chef = chef
 
 
 # Lancer l'application

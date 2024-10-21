@@ -4,13 +4,14 @@ from PIL import Image
 from .formulaire.clientFormulaire import ClientForm
 from .formulaire.erreur.confirmation import Confirmation
 from controleur.clientControler import *
+from . formulaire.erreur.erreur import erreur
 
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class ClientPage(ctk.CTkFrame):
 
     clientAttribue = ("nom", "prenom", "telephone", "addresse")
-    rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
+    rechecheImagePath = "ctkAPP/images/recherche.png"
     reponse = {}
     mode = ""
     listeClient = []
@@ -36,15 +37,9 @@ class ClientPage(ctk.CTkFrame):
         self.frameGauche = ctk.CTkFrame(self.menu, height=50)
         self.frameGauche.pack(side="left", padx=3, pady=3)
 
-        self.nouveauBoutton = ctk.CTkButton(self.frameGauche, text="nouveau", height=35, width=50, command=self.ajouterClient)
-        self.nouveauBoutton.pack(side="left", padx=3, pady=3)
-
-        self.modifierBoutton = ctk.CTkButton(self.frameGauche, text="modifier", height=35, width=50, command=self.modifierClient)
-        self.modifierBoutton.pack(side="right", padx=3, pady=3)
-
-        self.supprimerBoutton = ctk.CTkButton(self.menu, text="supprimer", height=35, width=50, command=self.supprimer)
-        self.supprimerBoutton.pack(side="right", padx=3, pady=3)
-
+        ctk.CTkButton(self.frameGauche, text="nouveau", fg_color="green", height=35, width=50, command=self.ajouterClient).pack(side="left", padx=3, pady=3)
+        ctk.CTkButton(self.frameGauche, text="modifier", fg_color="#00AA00", height=35, width=50, command=self.modifierClient).pack(side="right", padx=3, pady=3)
+        
         self.tabFrame.grid_columnconfigure(0, weight=1)
         self.tabFrame.grid_rowconfigure(1, weight=1)
         self.tabFrame.grid_rowconfigure(0, weight=0)
@@ -130,18 +125,14 @@ class ClientPage(ctk.CTkFrame):
                             addresse=self.reponse["addresse"]
                 ):
                     self.clientTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun client"))
 
-    def supprimer(self):
-        selection=self.clientTab.selection()
-        if selection:
-            message = "cette action supprimera toutes\nles commandes associees"
-            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
-            if self.autoriserSuppression:
-                if supprimerClient(selection[0]):
-                    self.clientTab.delete(selection)
 
         
     def miseAjour(self):
+        if self.grid_info():
+            self.controller.title("client")
         self.listeClient = obtenirClients()
         self.clientTab.delete(*self.clientTab.get_children())
         for client in self.listeClient:
@@ -154,4 +145,14 @@ class ClientPage(ctk.CTkFrame):
         self.autoriserSuppression = permission
 
 
+    """def supprimer(self):
+        selection=self.clientTab.selection()
+        if selection:
+            message = "cette action supprimera toutes\nles commandes associees"
+            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
+            if self.autoriserSuppression:
+                if supprimerClient(selection[0]):
+                    self.clientTab.delete(selection)
+        else:
+            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun client"))"""
 

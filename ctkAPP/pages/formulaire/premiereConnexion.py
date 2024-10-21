@@ -13,50 +13,92 @@ class PremiereConnexion(ctk.CTkToplevel):
     emailPattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     numeroPattern = r"[0-9]{8}"
     nomPattern = r"[a-zA-Z]"
+    mdpParttern = r"[a-zA-Z0-9@$!%*?&]+"
+
 
     def __init__(self, parent, callback):
         super().__init__(parent)
-        self.geometry("500x400")
+        self.geometry("345x380")
+        self.resizable(False, False)
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
         self.callback = callback
+        self.controller = parent
  
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
         self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=0)
 
-        self.titre = ctk.CTkLabel(self, text="mode", font=ctk.CTkFont(family="Arial", size=25, weight="bold"))
-        self.titre.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
         self.contenu = ctk.CTkFrame(self)
-        #for i in range(4):
-        #    self.contenu.grid_rowconfigure(i, weight=1)
+        for i in range(7):
+            self.contenu.grid_rowconfigure(i, weight=1)
+
         self.contenu.grid_columnconfigure(0, weight=1)
-        self.contenu.grid(row=1, column=0, sticky="nsew", padx=15, pady=5)
 
-        self.entreeNom = ctk.CTkEntry(self.contenu, placeholder_text="nom", width=200)
-        self.entreePrenom = ctk.CTkEntry(self.contenu, placeholder_text="prenom", width=200)
-        self.entreeTelephone = ctk.CTkEntry(self.contenu, placeholder_text="telephone", width=200)
-        self.entreeAddresse = ctk.CTkEntry(self.contenu, placeholder_text="addresse", width=200)
+        self.contenu.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
 
-        self.entreeNom.grid(row=0, column=0, pady=(30, 5))
-        self.entreePrenom.grid(row=1, column=0, pady=(5, 5))
-        self.entreeTelephone.grid(row=2, column=0, pady=(5, 5))
-        self.entreeAddresse.grid(row=3, column=0, pady=(5, 30))
+        ctk.CTkLabel(self.contenu, text="nouvel administrateur", font=ctk.CTkFont("Arial", size=25, weight="bold")).grid(row=0, column=0, pady=10, padx=5)
+        self.entreeNom = ctk.CTkEntry(self.contenu, placeholder_text="nom", width=250)
+        self.entreePrenom = ctk.CTkEntry(self.contenu, placeholder_text="prenom", width=250)
+        self.entreeTelephone = ctk.CTkEntry(self.contenu, placeholder_text="telephone", width=250)
+        self.entreeAddresse = ctk.CTkEntry(self.contenu, placeholder_text="addresse", width=250)
+        self.entreeMdp = ctk.CTkEntry(self.contenu, placeholder_text="mot de passe", width=250)
+        self.entreeMdpConfirm = ctk.CTkEntry(self.contenu, placeholder_text="confirmer", width=250)
+
+        self.entreeNom.grid(row=1, column=0, pady=(10, 5))
+        self.entreePrenom.grid(row=2, column=0, pady=(5, 5))
+        self.entreeTelephone.grid(row=3, column=0, pady=(5, 5))
+        self.entreeAddresse.grid(row=4, column=0, pady=(5, 5))
+        self.entreeMdp.grid(row=5, column=0, pady=(5, 5))
+        self.entreeMdpConfirm.grid(row=6, column=0, pady=(5, 10))
 
         self.confirmationFrame = ctk.CTkFrame(self, height=50)
-        self.confirmationFrame.grid(row=2, column=0, sticky="ew", pady=15)
+        self.confirmationFrame.grid(row=1, column=0, sticky="ew", pady=5, padx=10)
 
-        self.valider = ctk.CTkButton(self.confirmationFrame, text="valider", fg_color="green")
-        self.annuler = ctk.CTkButton(self.confirmationFrame, text="annuler", fg_color="red")
-        self.valider.pack(side="right", padx=(30, 50), pady=10)
-        self.annuler.pack(side="left", padx=(50, 30), pady=10)
+        ctk.CTkButton(self.confirmationFrame, text="valider", fg_color="green", command=self.verification).pack(side="right", padx=(10, 10), pady=10)
+        ctk.CTkButton(self.confirmationFrame, text="annuler", fg_color="red", command=self.fermetureAnormale).pack(side="left", padx=(10, 10), pady=10)
 
         self.wait_visibility()
         self.grab_set()
-        #self.grab_set_global()
-        #self.mainloop()
+
+    def verification(self):
+        nom = self.entreeNom.get().strip()
+        prenom = self.entreePrenom.get().strip()
+        telephone = self.entreeTelephone.get().strip()
+        email = self.entreeAddresse.get().strip()
+        mdp = self.entreeMdp.get().strip()
+        mdpConfirm = self.entreeMdpConfirm.get().strip()
+
+        if not re.match(self.nomPattern, nom):
+            self.rougir(self.entreeNom)
+        elif not re.match(self.nomPattern, prenom):
+            self.rougir(self.entreePrenom)
+        elif not re.match(self.numeroPattern, telephone):
+            self.rougir(self.entreeTelephone)
+        elif not re.match(self.emailPattern, email):
+            self.rougir(self.entreeAddresse)
+        elif not re.match(self.mdpParttern, mdp):
+            self.rougir(self.entreeMdp)
+        elif not re.match(self.mdpParttern, mdpConfirm):
+            self.rougir(self.entreeMdpConfirm)
+        elif mdp != mdpConfirm:
+            message = "les mots de passe entres\nne sont pas identiques"
+            self.controller.wait_window(erreur(self.controller, message))
+        else:
+            self.callback({"nom":nom, "prenom":prenom, "motDePasse":mdp, "telephone":telephone})
+            self.destroy()
 
     def fermetureAnormale(self):
+        self.callback({})
         self.destroy()
+
+    def info(self):
+        print(f"width: {self.winfo_width()}, height: {self.winfo_height()}")
+
+    def rougir(self, widget):
+        widget.configure(fg_color = "red")
+        self.after(1500, lambda:self.blanchir(widget))
+
+    def blanchir(self, widget):
+        widget.configure(fg_color="white")

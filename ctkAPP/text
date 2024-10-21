@@ -204,3 +204,60 @@ BEGIN
         EXECUTE 'DROP TABLE IF EXISTS ' || quote_ident(r.tablename) || ' CASCADE';
     END LOOP;
 END $$;
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+
+def envoyer_email(expediteur, mot_de_passe, destinataire, sujet, corps):
+    # Créer l'objet du message
+    message = MIMEMultipart()
+    message["From"] = expediteur
+    message["To"] = destinataire
+    message["Subject"] = sujet
+
+    # Ajouter le corps de l'email
+    message.attach(MIMEText(corps, "plain"))
+
+    # Convertir le message en chaîne de texte
+    email_texte = message.as_string()
+
+    # Se connecter au serveur SMTP
+    try:
+        serveur_smtp = smtplib.SMTP("smtp.gmail.com", 587)
+        serveur_smtp.starttls()  # Démarrer la connexion sécurisée TLS
+        serveur_smtp.login(expediteur, mot_de_passe)  # Connexion avec l'adresse email et le mot de passe
+
+        # Envoyer l'email
+        serveur_smtp.sendmail(expediteur, destinataire, email_texte)
+        print("Email envoyé avec succès !")
+
+        # Fermer la connexion
+        serveur_smtp.quit()
+
+    except Exception as e:
+        print(f"Erreur lors de l'envoi de l'email : {e}")
+
+expediteur = "ton_email@gmail.com"
+mot_de_passe = "ton_mot_de_passe"  # Attention à la sécurité de ton mot de passe
+destinataire = "destinataire@example.com"
+sujet = "Objet de l'email"
+corps = "Ceci est le corps de l'email envoyé via Python."
+
+envoyer_email(expediteur, mot_de_passe, destinataire, sujet, corps)
+
+
+from email.mime.base import MIMEBase
+from email import encoders
+
+def ajouter_piece_jointe(message, chemin_fichier):
+    with open(chemin_fichier, "rb") as fichier:
+        piece = MIMEBase("application", "octet-stream")
+        piece.set_payload(fichier.read())
+    encoders.encode_base64(piece)
+    piece.add_header(
+        "Content-Disposition",
+        f"attachment; filename= {chemin_fichier}",
+    )
+    message.attach(piece)

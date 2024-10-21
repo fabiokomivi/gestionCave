@@ -12,3 +12,6 @@ class ParametrePage(ctk.CTkFrame):
         self.button.grid(row=2, column=0)
         ctk.CTkLabel(self, text="test").grid(column=0, row=3)
         ctk.CTkLabel(self, text="test2").grid(column=0, row=4)
+    
+    def miseAjour(self):
+        pass

@@ -42,8 +42,9 @@ def obtenirClientparAttribue(clientId=None, nom=None, prenom=None, telephone=Non
         if addresse:
             query = query.filter(Client.addresse.ilike(f"%{addresse}%"))
         if clientId:
-            query = query.filter(Client.id == clientId)
-
+            employe = query.filter(Client.id == clientId).first()
+            session.close()
+            return employe
     clients = query.all()
     session.close()
     

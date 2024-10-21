@@ -10,4 +10,4 @@ class Chef(MODEL):
     motDePasse = Column(String, nullable=False)
     telephone = Column(String, nullable=False, unique=True)
 
-    employes = relationship("Employe", back_populates="chef")
+    employes = relationship("Employe", back_populates="chef", cascade="all, delete-orphan")

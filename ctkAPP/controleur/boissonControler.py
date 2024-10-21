@@ -26,18 +26,20 @@ def creerBoisson(nom, prix,  categorieId, image=""):
     return True
 
 
-def obtenirBoissonParAttribue(boissonId="", nom="", prix=0, tous=False):
+def obtenirBoissonParAttribue(boissonId=None, nom=None, prix=None, tous=False):
     session = SessionLocal()
-    boissons = session.query(Boisson)
+    boissons = session.query(Boisson).options(joinedload(Boisson.stock))
     if tous:
         session.close()
         return boissons.all()
-    if boissonId:
-        boissons=boissons.filter(Boisson.id==boissonId)
     if prix:
         boissons=boissons.filter(Boisson.prix<=prix)
     if nom:
         boissons = boissons.filter(Boisson.nom.ilike(f"%{nom}%"))
+    if boissonId:
+        boisson=boissons.filter(Boisson.id==boissonId).first()
+        session.close
+        return boisson
     session.close
     return boissons.all()
 
@@ -95,5 +97,7 @@ def obtenirQuantitesBoissons():
     session = SessionLocal()
     resultats = session.query(Boisson.nom, Stock.quantite).join(Stock).all()
     session.close()
-    return zip(*resultats)  # Cela renvoie les noms et les quantités sous forme de deux listes
+    boissons = [resultat[0] for resultat in resultats]  # Liste des noms de catégories
+    quantites = [resultat[1] for resultat in resultats]
+    return boissons, quantites
 

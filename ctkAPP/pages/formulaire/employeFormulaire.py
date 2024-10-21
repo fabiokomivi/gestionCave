@@ -13,12 +13,16 @@ class employeForm(ctk.CTkToplevel):
     nomPattern = r"[a-zA-Z]"
     mpdPattern = r"[a-zA-Z0-9]"
 
-    def __init__(self, parent, callback, infoEmploye, mode):
+    def __init__(self, parent, callback, infoEmploye, mode=False):
         super().__init__(parent)
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.geometry("316x243")
+        self.resizable(False, False)
+        self.centreFenetre()
         self.callback = callback
         self.infoEmploye = infoEmploye
         self.mode = mode
+        self.title("ajout employe" if not self.mode else "modification employe")
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -41,7 +45,7 @@ class employeForm(ctk.CTkToplevel):
         topFrame.grid(row=0, column=0, sticky="nsew", padx=3, pady=3)
         bottomFrame.grid(row=1, column=0, sticky="ew", padx=3, pady=3)
 
-        ctk.CTkButton(bottomFrame, text="annuler", fg_color="red", command=self.destroy).pack(side="left", padx=5, pady=3)
+        ctk.CTkButton(bottomFrame, text="annuler", fg_color="red", command=self.fermetureAnormale).pack(side="left", padx=5, pady=3)
         ctk.CTkButton(bottomFrame, text="valider", fg_color="green", command=self.verification).pack(side="right", padx=5, pady=3)
 
         self.entreeNom = ctk.CTkEntry(topFrame, placeholder_text="nom")
@@ -81,17 +85,15 @@ class employeForm(ctk.CTkToplevel):
         elif not re.match(self.mpdPattern, mdp):
             self.rougir(self.entreeMDP)
         else:
-            if self.mode=="ajout":
+            if not self.mode:
                 if obtenirEmployePar(telephone=telephone): 
                     self.wait_window(erreur(self, "un employe possede deja ce numero"))
                 elif obtenirEmployePar(addresse=addresse):
                     self.wait_window(erreur(self, "un employe possede deja cet addresse"))
                 else:
-                    print("toto")
                     self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse, "mdp": mdp})
                     self.destroy()
-            elif self.mode=="modification":
-
+            else :
                 for employe in obtenirEmployePar(telephone=telephone):
                     if (employe.id!=self.infoEmploye["id"]) and (employe.telephone==telephone):
                         self.wait_window(erreur(self, "un employe possede deja ce numero"))
@@ -116,3 +118,20 @@ class employeForm(ctk.CTkToplevel):
     def fermetureAnormale(self):
         self.callback(None)
         self.destroy()
+
+    def centreFenetre(self):
+
+        pere_x = self.master.winfo_x()
+        pere_y = self.master.winfo_y()
+        pere_largeur = self.master.winfo_width()
+        pere_hauter = self.master.winfo_height()
+
+        enfant_largeur = self.winfo_reqwidth()
+        enfant_hauteur = self.winfo_reqheight()
+
+        position_x = pere_x + (pere_largeur // 2) - (enfant_largeur // 2)
+        position_y = pere_y + (pere_hauter // 2) - (enfant_hauteur // 2)
+
+        self.geometry(f"+{position_x}+{position_y}")
+
+    
