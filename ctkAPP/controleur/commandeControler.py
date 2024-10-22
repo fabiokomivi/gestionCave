@@ -72,7 +72,9 @@ def obtenirVentesParCategorie():
     resultats = session.query(Categorie.nom, func.sum(LigneCommande.prixTotal)).\
                 join(Boisson, Boisson.categorieId == Categorie.id).\
                 join(LigneCommande, LigneCommande.boissonId == Boisson.id).\
-                group_by(Categorie.nom).all()
+                join(Commande, LigneCommande.commandeId==Commande.id).\
+                filter(Commande.etat=="validée").\
+                group_by(Categorie.nom)
     session.close()
     
     categories = [resultat[0] for resultat in resultats]
@@ -85,6 +87,8 @@ def obtenirVentesParPrixBoisson():
     session = SessionLocal()
     resultats = session.query(Boisson.nom, func.sum(LigneCommande.prixTotal)).\
                 join(LigneCommande, LigneCommande.boissonId == Boisson.id).\
+                join(Commande, LigneCommande.commandeId==Commande.id).\
+                filter(Commande.etat=="validée").\
                 group_by(Boisson.nom).all()
     session.close()
     
@@ -98,6 +102,8 @@ def obtenirVentesParQuantiteBoisson():
     session = SessionLocal()
     resultats = session.query(Boisson.nom, func.sum(LigneCommande.quantite)).\
                 join(LigneCommande, LigneCommande.boissonId == Boisson.id).\
+                join(Commande, LigneCommande.commandeId==Commande.id).\
+                filter(Commande.etat=="validée").\
                 group_by(Boisson.nom).all()
     session.close()
     
@@ -111,11 +117,13 @@ def obtenirVenteParEmployes():
     resultats = session.query(
         Employe.nom,
         Employe.prenom,
-        func.sum(LigneCommande.prixTotal)
-    ).join(Commande, Commande.employeId == Employe.id) \
-        .join(LigneCommande, LigneCommande.commandeId == Commande.id) \
-        .group_by(Employe.nom, Employe.prenom) \
-        .all()
+        func.sum(LigneCommande.prixTotal)).\
+            join(Commande, Commande.employeId == Employe.id).\
+            join(LigneCommande, LigneCommande.commandeId == Commande.id).\
+            join(Commande, LigneCommande.commandeId==Commande.id).\
+            filter(Commande.etat=="validée").\
+            group_by(Employe.nom, Employe.prenom).\
+            all()
 
     session.close()
 

@@ -96,7 +96,7 @@ if __name__ == "__main__":
 
 def infoTaille(self):
      print(f"{self.winfo_width()}, {self.winfo_height()}")"""
-import customtkinter as ctk
+"""import customtkinter as ctk
 
 class PasswordEntry(ctk.CTkFrame):
     def __init__(self, master=None):
@@ -128,4 +128,14 @@ if __name__ == "__main__":
 
     PasswordEntry(root)
 
-    root.mainloop()
+    root.mainloop()"""
+
+import hashlib
+
+
+def hasher(password):
+    passwordBytes = password.encode('utf-8')
+    passwordHash = hashlib.sha256(passwordBytes)
+    return passwordHash.hexdigest()
+
+print(hasher("GW8xjT"))

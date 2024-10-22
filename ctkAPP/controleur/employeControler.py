@@ -3,11 +3,17 @@ from sqlalchemy.orm import joinedload
 from models.employe import Employe
 from models.commande import Commande
 from sqlalchemy.orm import joinedload
+import hashlib
+
+def hasher(password):
+    passwordBytes = password.encode('utf-8')
+    passwordHash = hashlib.sha256(passwordBytes)
+    return passwordHash.hexdigest()
 
 
 def creerEmploye(chefId, nom, prenom, telephone, addresse, motDePasse ):
     session = SessionLocal()
-    session.add(Employe(chefId = chefId, nom=nom, prenom=prenom, motDePasse=motDePasse, telephone=telephone, addresse=addresse))
+    session.add(Employe(chefId = chefId, nom=nom, prenom=prenom, motDePasse=hasher(motDePasse), telephone=telephone, addresse=addresse))
     session.commit()
     session.close()
 
@@ -30,7 +36,7 @@ def obtenirEmployePar(id=None, nom=None, prenom=None, telephone=None, addresse=N
                 employes = employes.filter(Employe.prenom==prenom) if connexion else\
                     employes.filter(Employe.prenom.ilike(f"%{prenom}%"))
             if mdp:
-                employes = employes.filter(Employe.motDePasse==mdp)
+                employes = employes.filter(Employe.motDePasse==hasher(mdp))
             
             employes = employes.all()
     finally:

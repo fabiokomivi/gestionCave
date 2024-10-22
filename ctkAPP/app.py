@@ -25,8 +25,6 @@ from controleur.employeControler import *
 ctk.set_appearance_mode("light")  # Mode sombre
 ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
-#creerChef("amouzou", "fabio", "fabio2002", "06661918")
-#creerEmploye(1, "toto", "patrick", "employe1", "01010101", "toto@gmail.com")
 
 class APP(ctk.CTk):
 
@@ -76,7 +74,7 @@ class APP(ctk.CTk):
         self.chargerPageGestion()
 
         self.estPremiereConnexion()
-        self.after(1000, self.remplaceBienvenue)
+        self.after(500, self.remplaceBienvenue)
         self.mainloop()
     
     def chargerPagePrimaire(self):

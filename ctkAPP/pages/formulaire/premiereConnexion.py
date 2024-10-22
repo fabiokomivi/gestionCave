@@ -86,7 +86,7 @@ class PremiereConnexion(ctk.CTkToplevel):
             message = "les mots de passe entres\nne sont pas identiques"
             self.controller.wait_window(erreur(self.controller, message))
         else:
-            self.callback({"nom":nom, "prenom":prenom, "motDePasse":mdp, "telephone":telephone})
+            self.callback({"nom":nom, "prenom":prenom, "motDePasse":mdp, "telephone":telephone, "email": email})
             self.destroy()
 
     def fermetureAnormale(self):
