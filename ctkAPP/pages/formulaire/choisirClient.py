@@ -18,6 +18,7 @@ class choixClient(ctk.CTkToplevel):
         super().__init__(parent)
         self.commandeTmp = commande
         self.protocol("WM_DELETE_WINDOW", self.annuler)
+        self.attributes('-topmost', True)
         self.geometry("800x450")
         self.resizable(False, False)
         self.grid_columnconfigure(0, weight=1)
@@ -86,11 +87,9 @@ class choixClient(ctk.CTkToplevel):
     def recherche(self, event=None):
         critere = self.selecteur.get()
         texteRechere = self.rechercheEntree.get()
-        print(*self.clientTab.get_children())
         self.clientTab.delete(*self.clientTab.get_children())
         match critere:
             case "id":
-                print(f"'{texteRechere}'")
                 self.listeClient = obtenirClientparAttribue(employeId=eval(texteRechere.strip()))
             case "nom":
                 self.listeClient = obtenirClientparAttribue(nom=texteRechere)
@@ -101,7 +100,6 @@ class choixClient(ctk.CTkToplevel):
             case "addresse":
                 self.listeClient = obtenirClientparAttribue(addresse=texteRechere)
         for client in self.listeClient:
-            print(client.nom)
             self.clientTab.insert("", tk.END, values=(client.nom, client.prenom, client.telephone, client.addresse))
 
     def miseAJourTable(self):

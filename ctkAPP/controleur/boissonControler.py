@@ -28,7 +28,7 @@ def creerBoisson(nom, prix,  categorieId, image=""):
 
 def obtenirBoissonParAttribue(boissonId=None, nom=None, prix=None, tous=False):
     session = SessionLocal()
-    boissons = session.query(Boisson).options(joinedload(Boisson.stock))
+    boissons = session.query(Boisson).options(joinedload(Boisson.stock), joinedload(Boisson.categorie))
     if tous:
         session.close()
         return boissons.all()

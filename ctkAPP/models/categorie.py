@@ -6,6 +6,6 @@ class Categorie(MODEL):
     __tablename__= "Categories"
     id = Column(Integer, primary_key=True, nullable=False)
     nom = Column(String, nullable=False)
-    description = Column(String)
+    description = Column(String, nullable=False)
 
     boissons = relationship("Boisson", back_populates="categorie", cascade="all, delete-orphan")

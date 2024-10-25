@@ -5,6 +5,7 @@ class Confirmation(ctk.CTkToplevel):
         super().__init__(parent)
         self.title("")
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
         self.callback = callback
 
         self.grid_columnconfigure(0, weight=1)

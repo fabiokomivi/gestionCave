@@ -1,5 +1,6 @@
 from models.database import SessionLocal
 from models.categorie import Categorie
+from sqlalchemy.orm import joinedload
 
 
 def creerCategorie(nom, description):
@@ -10,9 +11,9 @@ def creerCategorie(nom, description):
     return True
 
 
-def obtenirCategorieParAttribue(categorieId="", nom="", description="", tous=True):
+def obtenirCategorieParAttribue(categorieId="", nom="", description="", tous=False):
     session = SessionLocal()
-    query = session.query(Categorie)
+    query = session.query(Categorie).options(joinedload(Categorie.boissons))
     if tous:
         session.close()
         return query.all()
@@ -28,10 +29,7 @@ def obtenirCategorieParAttribue(categorieId="", nom="", description="", tous=Tru
 
 def modifierCategorie(categorieId, nom, description):
     session = SessionLocal()
-    categorie = session.query(Categorie).filter(Categorie.id==categorieId)
-    if categorie is None:
-        session.close()
-        return False
+    categorie = session.query(Categorie).filter(Categorie.id==categorieId).first()
     if nom:
         categorie.nom = nom
     if description:

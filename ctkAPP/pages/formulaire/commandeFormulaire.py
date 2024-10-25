@@ -24,6 +24,7 @@ class commandeForm(ctk.CTkToplevel):
         self.resizable(False, False)
         self.title("commandes")
         self.protocol("WM_DELETE_WINDOW", self.annuler)
+        self.attributes('-topmost', True)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.contenu = ctk.CTkFrame(self)
@@ -135,13 +136,11 @@ class commandeForm(ctk.CTkToplevel):
             
             if ligne_id in self.commandeTmp.idConnues:
                 for ligne in self.commandeTmp.lignesConnues:
-                    print(ligne_id, str(ligne.id), ligne.id)
                     if ligne_id == str(ligne.id):
                         self.commandeTmp.ligneCourrante = ligne
                         break
             else:
                 for ligne in self.commandeTmp.lignesInconnues:
-                    print(ligne_id, str(ligne.id), ligne.id)
                     if ligne_id == str(ligne.id):
                         self.commandeTmp.ligneCourrante = ligne
                         break

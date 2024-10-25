@@ -11,15 +11,16 @@ ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/m
 
 class ClientForm(ctk.CTkToplevel):
     emailPattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
-    numeroPattern = r"[0-9]{8}"
+    numeroPattern = r"^(\d{8}|)$"
     nomPattern = r"[a-zA-Z]"
 
     def __init__(self,controller, callback, infoClient, mode=False):
         super().__init__(controller)
         self.geometry("319x247")
         self.resizable(False, False)
-        self.title("ajouter client" if mode=="ajout" else "modifier client")
+        self.title("ajouter client" if not mode else "modifier client")
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
         self.callback = callback
         self.mode = mode
         self.infoClient = infoClient
@@ -30,8 +31,7 @@ class ClientForm(ctk.CTkToplevel):
 
 
         self.contenu = ctk.CTkFrame(self)
-        #for i in range(4):
-        #    self.contenu.grid_rowconfigure(i, weight=1)
+
         self.contenu.grid_columnconfigure(0, weight=1)
         self.contenu.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
@@ -68,7 +68,8 @@ class ClientForm(ctk.CTkToplevel):
         nom = self.entreeNom.get()
         prenom = self.entreePrenom.get()
         telephone = self.entreeTelephone.get()
-        addresse = self.entreeAddresse.get()
+        addresse = self.entreeAddresse.get().strip()
+        #addresse = addresse if re.match(self.emailPattern, addresse) else ""
 
         if not re.match(self.nomPattern, nom):
             self.rougir(self.entreeNom)
@@ -76,18 +77,18 @@ class ClientForm(ctk.CTkToplevel):
             self.rougir(self.entreePrenom)
         elif not re.match(self.numeroPattern, telephone):
             self.rougir(self.entreeTelephone)
-        elif not re.match(self.emailPattern, addresse):
+        elif not re.match(self.emailPattern, addresse) and addresse!="":
             self.rougir(self.entreeAddresse)
         else:
-            if self.mode=="ajout":
+            if not self.mode:
                 if obtenirClientparAttribue(telephone=telephone): 
                     self.wait_window(erreur(self, "un client possede deja ce numero"))
-                elif obtenirClientparAttribue(addresse=addresse):
+                elif obtenirClientparAttribue(addresse=addresse) and addresse!="":
                     self.wait_window(erreur(self, "un client possede deja cet addresse"))
                 else:
                     self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse})
                     self.destroy()
-            elif self.mode=="modification":
+            else:
 
                 for client in obtenirClientparAttribue(telephone=telephone):
                     if (client.id!=self.infoClient["id"]) and (client.telephone==telephone):
@@ -95,7 +96,7 @@ class ClientForm(ctk.CTkToplevel):
                         return
                     
                 for client in obtenirClientparAttribue(addresse=addresse):
-                    if client.id!=self.infoClient["id"] and client.addresse==addresse:
+                    if client.id!=self.infoClient["id"] and client.addresse==addresse and addresse!="":
                         self.wait_window(erreur(self, "un client possede deja cet addresse"))
                         return
                     

@@ -1,5 +1,5 @@
 import customtkinter as ctk
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class GestionPage(ctk.CTkFrame):
     def __init__(self, parent, controller):

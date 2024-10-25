@@ -4,6 +4,7 @@ class erreur(ctk.CTkToplevel):
     def __init__(self, parent, message):
         super().__init__(parent)
         self.title("")
+        self.attributes('-topmost', True)
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
         self.grid_rowconfigure(0, minsize=50)

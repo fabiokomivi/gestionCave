@@ -1,10 +1,14 @@
 import customtkinter as ctk
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 from PIL import Image
 
 class myButton(ctk.CTkButton):
     def __init__(self, parent, controller, text):
         super().__init__(parent, text=text, width=70, command= lambda:controller.changePage(text) )
+        self.change(text)
+    def change(self, text):
+        if text=="deconnexion":
+            self.configure(fg_color="red")
 
 class menuItem(ctk.CTkFrame):
     def __init__(self, parent, controller, buttonText, image_path):

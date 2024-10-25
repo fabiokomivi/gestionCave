@@ -5,14 +5,15 @@ from controleur.employeControler import *
 from .formulaire.employeFormulaire import employeForm
 from .formulaire.erreur.confirmation import Confirmation
 from .formulaire.erreur.erreur import erreur
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+from pages.journalisation.log import logs
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
 
 class EmployePage(ctk.CTkFrame):
 
 
-    employeAttribue = ("nom", "prenom", "telephone", "addresse", "mot de passe")
-    rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
+    employeAttribue = ("nom", "prenom", "telephone", "addresse")
+    rechecheImagePath = "ctkAPP/images/recherche.png"
     reponse = {}
     mode = ""
     listeCategorie = []
@@ -96,12 +97,14 @@ class EmployePage(ctk.CTkFrame):
             employe = obtenirEmployePar(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])[0]
             if employe:
                 self.employeTab.insert("", tk.END, iid=employe.id, values=(employe.nom, employe.prenom, employe.telephone, employe.addresse, employe.motDePasse))
+                logs().logEmploye(employe, self.controller.utilisateurCourant)
 
     def modifierEmploye(self):
         selection = self.employeTab.selection()
         if selection:
             attribues = self.employeTab.item(selection)["values"]
-            employe = {"id":int(selection[0]), "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3], "mdp": attribues[4]}
+            employe = {"id":int(selection[0]), "nom": attribues[0], "prenom": attribues[1], "telephone": str(attribues[2]), "addresse": attribues[3]}
+            ancienEmploye = obtenirEmployePar(id=selection[0])
             self.wait_window(employeForm(self.controller, self.avoirInfo,  employe, True))
             if self.reponse:
                 if modifierEmploye(employeId=eval(selection[0]),
@@ -109,9 +112,10 @@ class EmployePage(ctk.CTkFrame):
                             prenom=self.reponse["prenom"],
                             telephone=self.reponse["telephone"],
                             addresse=self.reponse["addresse"],
-                            mdp=self.reponse["mdp"]
                 ):
-                    self.employeTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"], self.reponse["mdp"]))
+                    nouveauEmploye = obtenirEmployePar(id=selection[0])
+                    self.employeTab.item(selection, values=(nouveauEmploye.nom, nouveauEmploye.prenom, nouveauEmploye.telephone, nouveauEmploye.addresse))
+                    logs().logEmploye(ancienEmploye, self.controller.utilisateurCourant, nouveauEmploye, mode=2)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun employe"))
 
@@ -125,7 +129,7 @@ class EmployePage(ctk.CTkFrame):
         if employes:
             self.employeTab.delete(*self.employeTab.get_children())
             for employe in employes:
-                self.employeTab.insert("", tk.END, iid=employe.id, values=(employe.nom, employe.prenom, employe.telephone, employe.addresse, employe.motDePasse))
+                self.employeTab.insert("", tk.END, iid=employe.id, values=(employe.nom, employe.prenom, str(employe.telephone), employe.addresse))
 
     def recherche(self, event=None):
         critere = self.selecteur.get()
@@ -150,8 +154,10 @@ class EmployePage(ctk.CTkFrame):
             message = "cette action supprimera toutes\nles clients et commandes \nassociees"
             self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
             if self.autoriserSuppression:
+                employe = obtenirEmployePar(id=selection[0])
                 if supprimerEmploye(selection[0]):
                     self.employeTab.delete(selection)
+                    logs().logEmploye(employe, self.controller.utilisateurCourant, mode=3)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun employe"))
 

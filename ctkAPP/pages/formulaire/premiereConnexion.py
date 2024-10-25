@@ -4,6 +4,7 @@ import tkinter as tk
 from .erreur.erreur import erreur
 import re
 from controleur.chefControler import creerChef
+import hashlib
 
 
 ctk.set_appearance_mode("light")
@@ -20,7 +21,9 @@ class PremiereConnexion(ctk.CTkToplevel):
         super().__init__(parent)
         self.geometry("345x380")
         self.resizable(False, False)
+        self.title("")
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
         self.callback = callback
         self.controller = parent
  
@@ -39,12 +42,12 @@ class PremiereConnexion(ctk.CTkToplevel):
         self.contenu.grid(row=0, column=0, sticky="nsew", padx=10, pady=5)
 
         ctk.CTkLabel(self.contenu, text="nouvel administrateur", font=ctk.CTkFont("Arial", size=25, weight="bold")).grid(row=0, column=0, pady=10, padx=5)
-        self.entreeNom = ctk.CTkEntry(self.contenu, placeholder_text="nom", width=250)
-        self.entreePrenom = ctk.CTkEntry(self.contenu, placeholder_text="prenom", width=250)
-        self.entreeTelephone = ctk.CTkEntry(self.contenu, placeholder_text="telephone", width=250)
-        self.entreeAddresse = ctk.CTkEntry(self.contenu, placeholder_text="addresse", width=250)
-        self.entreeMdp = ctk.CTkEntry(self.contenu, placeholder_text="mot de passe", width=250)
-        self.entreeMdpConfirm = ctk.CTkEntry(self.contenu, placeholder_text="confirmer", width=250)
+        self.entreeNom = ctk.CTkEntry(self.contenu, placeholder_text="nom", width=300)
+        self.entreePrenom = ctk.CTkEntry(self.contenu, placeholder_text="prenom", width=300)
+        self.entreeTelephone = ctk.CTkEntry(self.contenu, placeholder_text="telephone", width=300)
+        self.entreeAddresse = ctk.CTkEntry(self.contenu, placeholder_text="addresse", width=300)
+        self.entreeMdp = ctk.CTkEntry(self.contenu, placeholder_text="mot de passe", width=300)
+        self.entreeMdpConfirm = ctk.CTkEntry(self.contenu, placeholder_text="confirmer", width=300)
 
         self.entreeNom.grid(row=1, column=0, pady=(10, 5))
         self.entreePrenom.grid(row=2, column=0, pady=(5, 5))
@@ -86,7 +89,7 @@ class PremiereConnexion(ctk.CTkToplevel):
             message = "les mots de passe entres\nne sont pas identiques"
             self.controller.wait_window(erreur(self.controller, message))
         else:
-            self.callback({"nom":nom, "prenom":prenom, "motDePasse":mdp, "telephone":telephone, "email": email})
+            self.callback({"nom":nom, "prenom":prenom, "motDePasse":self.hasher(mdp), "telephone":telephone, "email": email})
             self.destroy()
 
     def fermetureAnormale(self):
@@ -102,3 +105,8 @@ class PremiereConnexion(ctk.CTkToplevel):
 
     def blanchir(self, widget):
         widget.configure(fg_color="white")
+
+    def hasher(self, password):
+        passwordBytes = password.encode('utf-8')
+        passwordHash = hashlib.sha256(passwordBytes)
+        return passwordHash.hexdigest()

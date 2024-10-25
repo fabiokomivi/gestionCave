@@ -7,8 +7,9 @@ from .formulaire.erreur.confirmation import Confirmation
 from .formulaire.erreur.erreur import erreur
 import io
 from PIL import Image
+from pages.journalisation.log import logs
 
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class BoissonPage(ctk.CTkFrame):
 
@@ -111,20 +112,23 @@ class BoissonPage(ctk.CTkFrame):
                 boisson = obtenirBoissonParAttribue(tous=False, nom=self.reponse["nom"])[0]
                 if boisson:
                     self.boissonTab.insert("", tk.END, iid=boisson.id, values=(boisson.nom, boisson.prix, boisson.categorie.nom))
+                    logs().logBoisson(boisson=boisson, utilisateur=self.controller.utilisateurCourant)
 
 
     def modifierBoisson(self):
         selection = self.boissonTab.selection()
         if selection:
-            boisson = obtenirBoissonParAttribue(tous=False, boissonId=selection[0])
-            dicoDonnees = {"id": boisson.id, "nom": boisson.nom, "prix": boisson.prix, "categorie": boisson.categorie.nom, "image": self.bitVersImage(boisson.image)}
+            ancienBoisson = obtenirBoissonParAttribue(tous=False, boissonId=selection[0])
+            dicoDonnees = {"id": ancienBoisson.id, "nom": ancienBoisson.nom, "prix": ancienBoisson.prix, "categorie": ancienBoisson.categorie.nom, "image": self.bitVersImage(ancienBoisson.image)}
             self.wait_window(boissonForm(self.controller, self.avoirInfo, True, self.avoirCategories(),dicoDonnees))
             if self.reponse:
 
                 categorie = obtenirCategorieParAttribue(tous=False, nom=self.reponse["categorie"])[0]
 
-                if modifierBoisson(boissonId=boisson.id, nom=self.reponse["nom"],prix=self.reponse["prix"], categorieId=categorie.id, image=self.reponse["image"]):
+                if modifierBoisson(boissonId=ancienBoisson.id, nom=self.reponse["nom"],prix=self.reponse["prix"], categorieId=categorie.id, image=self.reponse["image"] if self.reponse["image"] else ancienBoisson.image):
                     self.boissonTab.item(selection[0], values=(self.reponse["nom"], self.reponse["prix"], self.reponse["categorie"]))
+                    nouvelleBoisson = obtenirBoissonParAttribue(boissonId=ancienBoisson.id)
+                    logs().logBoisson(ancienBoisson, self.controller.utilisateurCourant, nouvelleBoisson, mode=2)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune boisson"))
 
@@ -147,11 +151,13 @@ class BoissonPage(ctk.CTkFrame):
     def supprimerBoisson(self):
         selection = self.boissonTab.selection()
         if selection:
+            boisson = obtenirBoissonParAttribue(boissonId=selection[0])
             message = "cette action supprimera toutes\nles commandes unitaires associees"
             self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
             if self.autoriserSuppression:
                 if supprimerBoisson(selection[0]):
                     self.boissonTab.delete(selection[0])
+                    logs().logBoisson(boisson=boisson, utilisateur=self.controller.utilisateurCourant, mode=3)
                     self.labelVisuel.configure(image=self.boissonDefautImage)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune boisson"))

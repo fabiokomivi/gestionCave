@@ -15,12 +15,13 @@ class choixBoisson(ctk.CTkToplevel):
     boissonAttribue = ("nom", "prix", "categorie", "stock")
     patternQuantite = r"^0*[1-9]\d*$"
 
-    rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
+    rechecheImagePath = "ctkAPP/images/recherche.png"
     
 
     def __init__(self, parent, commande):
         super().__init__(parent)
         self.protocol("WM_DELETE_WINDOW", self.annuler)
+        self.attributes('-topmost', True)
         self.geometry("920x360")
         self.resizable(False, False)
         self.title("boissons")
@@ -154,7 +155,6 @@ class choixBoisson(ctk.CTkToplevel):
 
     def immobiliserBoissonTab(self, event):
         selection = self.boissonTab.selection()
-        print(selection and selection[0] != str(self.commandeTmp.ligneCourrante.boissonId))
         if selection and selection[0] != str(self.commandeTmp.ligneCourrante.boissonId):
             boisson = obtenirBoissonParAttribue(self.commandeTmp.ligneCourrante.boissonId)
             self.photoLabel.configure(image=self.bitVersImage(boisson.image))
@@ -169,10 +169,4 @@ class choixBoisson(ctk.CTkToplevel):
             self.boissonTab.bind("<<TreeviewSelect>>", self.immobiliserBoissonTab)
             self.quantiteEntree.insert(0, str(self.commandeTmp.ligneCourrante.quantite))
         else:
-            print("non")
             self.boissonTab.bind("<<TreeviewSelect>>", self.surSelection)
-
-
-
-    def infoTaille(self):
-        print(f"{self.winfo_width()}, {self.winfo_height()}")

@@ -7,6 +7,7 @@ class DiagramViewer(ctk.CTkToplevel):
     def __init__(self, parent, imagePath):
         super().__init__(parent)
         self.geometry("700x700")
+        self.attributes('-topmost', True)
         self.parent = parent
         self.resizable(False, False)
         self.grid_columnconfigure(0, weight=1)

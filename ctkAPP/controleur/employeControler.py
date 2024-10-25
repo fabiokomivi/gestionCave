@@ -75,7 +75,7 @@ def modifierEmploye(employeId, nom=None, prenom=None, telephone=None, addresse=N
     if addresse:
         employe.addresse = addresse
     if mdp:
-        employe.motDePasse = mdp
+        employe.motDePasse = hasher(mdp)
     session.commit()
     session.close()
     return True

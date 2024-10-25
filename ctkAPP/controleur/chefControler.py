@@ -9,24 +9,28 @@ def hasher(password):
     return passwordHash.hexdigest()
 
 
-def creerChef(nom, prenom, motDePasse , telephone, email):
+def creerChef(nom, prenom, motDePasse , telephone, addresse):
     session = SessionLocal()
-    session.add(Chef(nom=nom, prenom=prenom, motDePasse=motDePasse, telephone=telephone, email=email))
+    session.add(Chef(nom=nom, prenom=prenom, motDePasse=motDePasse, telephone=telephone, addresse=addresse))
     session.commit()
     session.close()
 
-def obtenirChefPar(nom=None, motDePasse=None, addresse=None):
+def obtenirChefPar(id=None, nom=None, motDePasse=None, addresse=None):
     session = SessionLocal()
-    chefs = session.query(Chef)
+    chef = session.query(Chef)
+    if id:
+        chef=chef.filter(Chef.id == id).first()
+        session.close()
+        return chef
     if nom:
-        chefs = session.query(Chef).filter(Chef.nom.ilike(f"%{nom}%"))
+        chef = chef.filter(Chef.nom==nom)
     if motDePasse:
-        chefs = session.query(Chef).filter(Chef.motDePasse==hasher(motDePasse))
+        chef = chef.filter(Chef.motDePasse==hasher(motDePasse))
     if addresse:
-        chefs = session.query(Chef).filter(Chef.email==addresse)
+        chef = chef.filter(Chef.addresse==addresse)
 
     session.close()
-    return chefs.first()
+    return chef.first()
 
 
 def obtenirChefs():
@@ -35,13 +39,15 @@ def obtenirChefs():
     session.close()
     return chefs
 
-def modifierChef(email, password):
+def modifierChef(chefId=None, addresse=None, password=None):
     session = SessionLocal()
-    if email:
-        chef = session.query(Chef).filter(Chef.email==email).first()
+    if addresse:
+        chef = session.query(Chef).filter(Chef.addresse==addresse).first()
         if chef:
-            chef.email=email
-            chef.motDePasse=password
+            if addresse:
+                chef.addresse=addresse
+            if password:
+                chef.motDePasse = hasher(password)
             session.commit()
     session.close()
         

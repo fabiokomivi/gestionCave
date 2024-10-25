@@ -2,6 +2,7 @@ import customtkinter as ctk
 import re
 from .erreur.erreur import erreur
 from controleur.employeControler import *
+import tkinter as tk
 
 
 
@@ -11,11 +12,12 @@ class employeForm(ctk.CTkToplevel):
     emailPattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
     numeroPattern = r"[0-9]{8}"
     nomPattern = r"[a-zA-Z]"
-    mpdPattern = r"[a-zA-Z0-9]"
+    mpdPattern = r"[a-zA-Z0-9@$!%*?&]+"
 
     def __init__(self, parent, callback, infoEmploye, mode=False):
         super().__init__(parent)
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
         self.geometry("316x243")
         self.resizable(False, False)
         self.centreFenetre()
@@ -59,8 +61,7 @@ class employeForm(ctk.CTkToplevel):
             self.entreePrenom.insert(0, self.infoEmploye["prenom"])
             self.entreeTelephone.insert(0, self.infoEmploye["telephone"])
             self.entreeAddresse.insert(0, self.infoEmploye["addresse"])
-            self.entreeMDP.insert(0, self.infoEmploye["mdp"])
-
+            self.entreeMDP.configure(state=tk.DISABLED)
         self.entreeNom.pack(side="top", padx=10, pady=3, fill="x")
         self.entreePrenom.pack(side="top", padx=10, pady=3, fill="x")
         self.entreeTelephone.pack(side="top", padx=10, pady=3, fill="x")
@@ -82,7 +83,7 @@ class employeForm(ctk.CTkToplevel):
             self.rougir(self.entreeTelephone)
         elif not re.match(self.emailPattern, addresse):
             self.rougir(self.entreeAddresse)
-        elif not re.match(self.mpdPattern, mdp):
+        elif not re.match(self.mpdPattern, mdp) and not self.mode:
             self.rougir(self.entreeMDP)
         else:
             if not self.mode:
@@ -104,7 +105,7 @@ class employeForm(ctk.CTkToplevel):
                         self.wait_window(erreur(self, "un employe possede deja cet addresse"))
                         return
                     
-                self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse, "mdp": mdp})
+                self.callback({"nom": nom, "prenom": prenom, "telephone": telephone, "addresse": addresse})
                 self.destroy()
 
     def rougir(self, widget):
@@ -134,4 +135,7 @@ class employeForm(ctk.CTkToplevel):
 
         self.geometry(f"+{position_x}+{position_y}")
 
-    
+    def hasher(self, password):
+        passwordBytes = password.encode('utf-8')
+        passwordHash = hashlib.sha256(passwordBytes)
+        return passwordHash.hexdigest()

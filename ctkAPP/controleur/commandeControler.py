@@ -114,16 +114,16 @@ def obtenirVentesParQuantiteBoisson():
 
 def obtenirVenteParEmployes():
     session = SessionLocal()
+    resultats = session.query()
     resultats = session.query(
-        Employe.nom,
-        Employe.prenom,
-        func.sum(LigneCommande.prixTotal)).\
-            join(Commande, Commande.employeId == Employe.id).\
-            join(LigneCommande, LigneCommande.commandeId == Commande.id).\
-            join(Commande, LigneCommande.commandeId==Commande.id).\
-            filter(Commande.etat=="validée").\
-            group_by(Employe.nom, Employe.prenom).\
-            all()
+    Employe.nom,
+    Employe.prenom,
+    func.sum(LigneCommande.prixTotal)).\
+        join(Commande, Commande.employeId == Employe.id).\
+        join(LigneCommande, LigneCommande.commandeId == Commande.id).\
+        filter(Commande.etat == "validée").\
+        group_by(Employe.nom, Employe.prenom).\
+        all()
 
     session.close()
 

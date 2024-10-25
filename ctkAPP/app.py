@@ -4,6 +4,7 @@ from widget.widget import menuItem
 from pages.commandePage import CommandePage
 from pages.clientPage import ClientPage
 from pages.parametrePage import ParametrePage
+from pages.parametreGerantPage import ParametreGerantPage
 from pages.gestionPage import GestionPage
 from pages.categoriePage import CategoriePage
 from pages.boissonPage import BoissonPage
@@ -20,6 +21,11 @@ from PIL import Image
 
 from controleur.chefControler import *
 from controleur.employeControler import *
+
+from pages.journalisation.log import logs
+from models.database import fermerTout, init_db
+import gc
+import matplotlib.pyplot as plt
 
 # Initialiser CustomTkinter
 ctk.set_appearance_mode("light")  # Mode sombre
@@ -72,9 +78,10 @@ class APP(ctk.CTk):
         self.chargerPageSecondaire()
         self.chargerPageEmploye()
         self.chargerPageGestion()
+        self.protocol("WM_DELETE_WINDOW", self.deconnexion)
 
         self.estPremiereConnexion()
-        self.after(500, self.remplaceBienvenue)
+        self.after(100, self.remplaceBienvenue)
         self.mainloop()
     
     def chargerPagePrimaire(self):
@@ -127,6 +134,7 @@ class APP(ctk.CTk):
         self.pagesChef["categories"] = CategoriePage(self.chefContenu, self)
         self.pagesChef["employes"] = EmployePage(self.chefContenu, self)
         self.pagesChef["stock"] = StockPage(self.chefContenu, self)
+        self.pagesChef["parametre"] = ParametreGerantPage(self.chefContenu, self)
         self.pagesChef["dashboard"] = DashboardPage(self.chefContenu, self)
         for gestions in self.pagesChef.values():
             gestions.grid(row=0, column=0, sticky="nsew")
@@ -147,7 +155,7 @@ class APP(ctk.CTk):
             .pack(padx=3,pady=3, fill="x")
         menuItem(self.menuEmploye, self, "parametres", self.settingImagePath)\
             .pack(padx=3,pady=3, fill="x")
-        menuItem(self.menuEmploye, self, "quitter", self.exitImagePath)\
+        menuItem(self.menuEmploye, self, "deconnexion", self.exitImagePath)\
             .pack(padx=3, pady=3, side="bottom", fill="x")
 
     def chargerMenuGestion(self):
@@ -168,9 +176,9 @@ class APP(ctk.CTk):
             .pack(side="top", padx=5, pady=3, fill="x")
         menuItem(self.menuChef, self, "employes", self.employeImagePath)\
             .pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "parametres", self.settingImagePath)\
+        menuItem(self.menuChef, self, "parametre", self.settingImagePath)\
             .pack(side="top", padx=5, pady=3, fill="x")
-        menuItem(self.menuChef, self, "quitter", self.exitImagePath)\
+        menuItem(self.menuChef, self, "deconnexion", self.exitImagePath)\
             .pack(side="bottom", padx=5, pady=3, fill="x")
         
 
@@ -203,9 +211,12 @@ class APP(ctk.CTk):
         return ctk.CTkImage(Image.open(imagePath), size=size)
     
     def changePage(self, pageName):
-        if pageName == "quitter":
+        if pageName == "deconnexion":
             self.pagesPrimaire["connexion"].miseAjour()
             self.pagesPrimaire["connexion"].tkraise()
+            logs().logConnexion(self.utilisateurCourant, mode=2)
+            self.utilisateurCourant=None
+            self.utilisateurType=None
 
         elif pageName in self.pagesPrimaire.keys():
             self.pagesPrimaire["connexion"].miseAjour()
@@ -240,6 +251,19 @@ class APP(ctk.CTk):
     def avoirInfo(self, chef):
         self.chef = chef
 
+    def deconnexion(self):
+        if self.utilisateurCourant:
+            logs().logConnexion(self.utilisateurCourant, mode=2)
+        plt.close('all')
+        self.destroy()
+        gc.collect()
+
 
 # Lancer l'application
-APP()
+init_db()
+try:
+    APP()
+except:
+    ...
+finally:
+    fermerTout()

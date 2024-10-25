@@ -130,7 +130,7 @@ if __name__ == "__main__":
 
     root.mainloop()"""
 
-import hashlib
+"""import hashlib
 
 
 def hasher(password):
@@ -138,4 +138,9 @@ def hasher(password):
     passwordHash = hashlib.sha256(passwordBytes)
     return passwordHash.hexdigest()
 
-print(hasher("GW8xjT"))
+print(hasher("GW8xjT"))"""
+file = open("test.txt", '+a')
+if file:
+    file.write("ou vas tu")
+    file.writelines([f"ou va tu {i}\n" for i in range(10) ])
+    file.close

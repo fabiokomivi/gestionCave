@@ -27,6 +27,7 @@ class motDePasseOublier(ctk.CTkToplevel):
         self.title("mot de passe oublier")
         self.centreFenetre()
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
 
 
         self.grid_columnconfigure(0, weight=1)

@@ -5,13 +5,14 @@ from controleur.stockControler import *
 from controleur.boissonControler import *
 from .formulaire.stockFormulaire import stockForm
 from .formulaire.erreur.erreur import erreur
+from pages.journalisation.log import logs
 import re
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 class StockPage(ctk.CTkFrame):
 
 
     stockAttribue = ("nom", "quantite")
-    rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
+    rechecheImagePath = "ctkAPP/images/recherche.png"
     reponse = {}
     mode = ""
 
@@ -88,6 +89,7 @@ class StockPage(ctk.CTkFrame):
                 if ajouterStock(stock.id, self.reponse):
                     stock = obtenirStockPar(stockId=selection[0])
                     self.stockTab.item(selection[0], values=(boisson.nom, stock.quantite))
+                    logs().logStock(boisson, self.reponse, stock.quantite)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune boisson"))
 

@@ -2,27 +2,25 @@ import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
 from controleur.clientControler import obtenirClientParEmploye
-from controleur.employeControler import modifierEmploye, obtenirEmployePar
+from controleur.chefControler import modifierChef, obtenirChefPar
 import re
 import hashlib
 from .formulaire.erreur.erreur import erreur
 ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
-class ParametrePage(ctk.CTkFrame):
+class ParametreGerantPage(ctk.CTkFrame):
 
     image = Image.open("ctkAPP/images/chef.png")
     userImage = ctk.CTkImage(light_image=image, dark_image=image, size=(100, 100))
-    clientAttribue = ("nom", "prenom", "telephone")
     mdpPattern = r"[a-zA-Z0-9@$!%*?&]+"
 
     def __init__(self, parent, controller):
         super().__init__(parent)
         self.controller = controller
 
-        self.grid_rowconfigure(0, minsize=150)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure(0, minsize=200)
         self.grid_columnconfigure(0, weight=1)
-        #self.grid_columnconfigure(0, minsize=100)
+        self.grid_columnconfigure(1, minsize=100)
         self.grid_columnconfigure(2, minsize=300)
 
         topFrameLeft = ctk.CTkFrame(self)
@@ -90,39 +88,13 @@ class ParametrePage(ctk.CTkFrame):
         ctk.CTkButton(topFrameRight, text="valider", fg_color="green", command=self.verification).grid(row=5, column=0, padx=3, pady=2)
 
 
-
-        tabFrame = ctk.CTkFrame(self)
-        tabFrame.grid_propagate(False)
-        tabFrame.grid(row=1, column=0, columnspan=3, padx=5,pady=5, sticky="nsew")
-
-        tabFrame.grid_columnconfigure(0, weight=1)
-        tabFrame.grid_rowconfigure(0, minsize=50)
-        tabFrame.grid_rowconfigure(1, weight=1)
-
-        ctk.CTkLabel(tabFrame, text="Vos clients").grid(row=0, column=0, padx=3, pady=3, sticky="nsew")
-
-        style = tk.ttk.Style()
-        style.configure("mystyle.Treeview", font=("Arial", 14))  # Augmenter la taille de la police
-        style.configure("mystyle.Treeview.Heading", font=("Arial", 16, "bold"))  # Augmenter la taille de la police des titres
-        style.configure("mystyle.Treeview", rowheight=30)  # Augmenter la hauteur des lignes
-
-
-        self.clientTab = tk.ttk.Treeview(tabFrame, style="mystyle.Treeview",columns=self.clientAttribue, show="headings")
-
-        for attribue in self.clientAttribue:
-            self.clientTab.heading(attribue, text=attribue)
-
-        self.clientTab.grid(row=1, column=0, padx=3, pady=3, sticky="nsew")
-
         self.miseAjour()
-        self.vider()
 
 
 
     
     def miseAjour(self):
         self.miseAjourEmploye()
-        self.miseAjourTab()
 
     def miseAjourEmploye(self):
         if self.controller.utilisateurCourant:
@@ -130,13 +102,6 @@ class ParametrePage(ctk.CTkFrame):
             self.prenomLabel.configure(text=self.controller.utilisateurCourant.prenom)
             self.telephoneLabel.configure(text=self.controller.utilisateurCourant.telephone)
             self.emailLabel.configure(text=self.controller.utilisateurCourant.addresse)
-
-    def miseAjourTab(self):
-        self.clientTab.delete(*self.clientTab.get_children())
-        if self.controller.utilisateurCourant:
-            clients = obtenirClientParEmploye(self.controller.utilisateurCourant.id)
-            for client in clients:
-                self.clientTab.insert("", tk.END, iid=client.id, values=(client.nom, client.prenom, client.telephone))
 
     def verification(self):
         mdp = self.mpdEntree.get().strip()
@@ -161,15 +126,12 @@ class ParametrePage(ctk.CTkFrame):
            self.wait_window(erreur(self.controller, "le mot de passe actuel\nest incorrect"))
 
         else:
-            modifierEmploye(self.controller.utilisateurCourant.id, mdp=mdpNouv)
-            self.controller.utilisateurCourant = obtenirEmployePar(id=self.controller.utilisateurCourant.id)
+            
+            modifierChef(addresse=self.controller.utilisateurCourant.addresse, password=mdpNouv)
+            self.controller.utilisateurCourant = obtenirChefPar(id=self.controller.utilisateurCourant.id)
             self.wait_window(erreur(self.controller, "mot de passe modifié\navec succès"))
             self.miseAjour()
             self.vider()
-
-
-
-
 
 
     def rougir(self, widget):

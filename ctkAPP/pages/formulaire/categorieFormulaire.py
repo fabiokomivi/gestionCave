@@ -9,7 +9,7 @@ ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class categorieForm(ctk.CTkToplevel):
 
-    nomPattern = r"[a-zA-Z]"
+    nomPattern = r"[a-zA-Z]+"
 
     def __init__(self,controller, callback, dico, mode=False):
         super().__init__(controller)
@@ -17,6 +17,7 @@ class categorieForm(ctk.CTkToplevel):
         self.centreFenetre()
         self.resizable(False, False)
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
         self.callback = callback
         self.mode = mode
         self.title("ajout categorie" if not self.mode else "modification categorie")
@@ -62,14 +63,10 @@ class categorieForm(ctk.CTkToplevel):
 
         if not re.match(self.nomPattern, nom):
             self.rougir(self.entreeNom)
-        elif not re.match(self.nomPattern, description):
-            self.rougir(self.entreeDescription)
         else:
             if not self.mode:
                 if obtenirCategorieParAttribue(nom=nom, categorieId="", description="", tous=False): 
                     self.wait_window(erreur(self, "cette categorie existe dejà"))
-                elif obtenirCategorieParAttribue(nom="", categorieId="", description=description, tous=False):
-                    self.wait_window(erreur(self, "une categorie a dejà cette description"))
                 else:
                     self.callback({"nom": nom, "description": description})
                     self.destroy()

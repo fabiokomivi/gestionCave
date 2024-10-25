@@ -12,6 +12,7 @@ from .formulaire.erreur.erreur import erreur
 from .formulaire.erreur.confirmation import Confirmation
 from weasyprint import CSS, HTML
 from .formulaire.temp.temp import *
+from pages.journalisation.log import logs
 
 
 ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
@@ -182,6 +183,7 @@ class CommandePage(ctk.CTkFrame):
                                             commande.dateCommande.strftime('%H:%M %d/%m/%Y'),
                                             commande.prixTotal(),
                                             commande.etat))
+                logs().logCommande(commande, self.controller.utilisateurCourant, mode=2)
                 message = "commande modifiée\navec succès"
                 self.wait_window(erreur(self.controller, message=message))
             else:
@@ -192,6 +194,7 @@ class CommandePage(ctk.CTkFrame):
                                                 commande.dateCommande.strftime('%H:%M %d/%m/%Y'),
                                                 commande.prixTotal(),
                                                 commande.etat))
+                logs().logCommande(commande, self.controller.utilisateurCourant, mode=1)
                 message = "commande enregistrée\navec succès"
                 self.wait_window(erreur(self.controller, message=message))
         else:
@@ -209,6 +212,7 @@ class CommandePage(ctk.CTkFrame):
             self.wait_window(Confirmation(self.controller, message=message, callback=self.avoirAutorisation))
             if self.autorisation:
                 if selection:
+                    logs().logCommande(commande, self.controller.utilisateurCourant, mode=3)
                     if supprimerCommande(selection[0]):
                         self.commandeTab.delete(selection)
     
@@ -242,6 +246,7 @@ class CommandePage(ctk.CTkFrame):
                                                         commande.dateCommande.strftime('%H:%M %d/%m/%Y'),
                                                         commande.prixTotal(),
                                                         "validée"))
+                        logs().logCommande(commande, self.controller.utilisateurCourant, mode=4)
                         message = "commande validée\navec succeès"
                         self.wait_window(erreur(self.controller, message=message))
             else:

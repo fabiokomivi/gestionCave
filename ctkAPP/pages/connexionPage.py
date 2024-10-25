@@ -6,6 +6,7 @@ import re
 from PIL import Image
 from .formulaire.erreur.erreur import erreur
 from .formulaire.motDePasseOublier import motDePasseOublier
+from pages.journalisation.log import logs
 
 
 
@@ -59,7 +60,7 @@ class ConnexionPage(ctk.CTkFrame):
         userLabel = ctk.CTkLabel(userFrame, text="nom", width=300, font=ctk.CTkFont(family="Arial", size=20, weight="bold"), anchor="sw")
         userLabel.grid(row=0, column=0, padx=0, sticky="")
 
-        self.userEntree = ctk.CTkEntry(userFrame, placeholder_text="utilisateur", height=50, width=300)
+        self.userEntree = ctk.CTkEntry(userFrame,font=ctk.CTkFont(family="Arial", size=20, weight="bold"), height=50, width=300)
         self.userEntree.grid(row=1, column=0, pady=0)
 
         ctk.CTkLabel(self.connexionFrame, text="mot de passe", width=300, font=ctk.CTkFont(family="Arial", size=20, weight="bold"), anchor="sw")\
@@ -73,7 +74,7 @@ class ConnexionPage(ctk.CTkFrame):
         passFrame.grid_rowconfigure(0, weight=1)
 
 
-        self.mpdEntree = ctk.CTkEntry(passFrame, placeholder_text="mot de passe", font=ctk.CTkFont(family="Arial", size=20), show="•", height=50, width=250)
+        self.mpdEntree = ctk.CTkEntry(passFrame, font=ctk.CTkFont(family="Arial", size=20, weight="bold"), show="•", height=50, width=250)
         self.mpdEntree.grid(row=0, column=0, padx=2, pady=(0, 0))
 
         self.passState = ctk.CTkCheckBox(passFrame, text="🙈", width=50, height=25, onvalue=1, offvalue=0, command=self.changeEtatMpd)
@@ -89,10 +90,10 @@ class ConnexionPage(ctk.CTkFrame):
         self.bouttonCommit.grid(row=7, column=0,columnspan=2, pady=(10, 10))
 
 
-        self.userEntree.insert(0, "admin")
+        self.userEntree.insert(0, "amouzou")
 
 
-        self.mpdEntree.insert(0, "1234")
+        self.mpdEntree.insert(0, "123")
 
 
     def changeEtatMpd(self):
@@ -105,7 +106,7 @@ class ConnexionPage(ctk.CTkFrame):
 
     def motDePasseOublier(self):
         self.controller.wait_window(motDePasseOublier(self.controller))
-        
+
     def quitterBoutonOblier(self, event):
         self.boutonOublier.configure(text_color="red")
 
@@ -125,20 +126,23 @@ class ConnexionPage(ctk.CTkFrame):
             self.rougir(self.mpdEntree)
             self.controller.wait_window(erreur(self.controller, "mot de passe invalide"))
         else:
-            utilisateur = obtenirChefPar(nom, motDePasse)
+            utilisateur = obtenirChefPar(nom=nom, motDePasse=motDePasse)
             
             if utilisateur:
                 self.controller.utilisateurCourant=utilisateur
+                logs().logConnexion(utilisateur)
                 self.controller.wait_window(erreur(self.controller, "connexion reussie"))
                 self.controller.title("dashboard")
                 self.controller.pagesChef["dashboard"].miseAjour()
                 self.controller.pagesChef["dashboard"].tkraise()
                 self.controller.pagesSecondaire["gestions"].tkraise()
                 self.controller.pagesPrimaire["contenu"].tkraise()
+                self.viderChamp()
             else:
                 utilisateur = obtenirEmployePar(nom=nom, mdp=motDePasse, connexion=True)
                 if utilisateur:
                     self.controller.utilisateurCourant=utilisateur[0]
+                    logs().logConnexion(utilisateur[0])
                     self.controller.wait_window(erreur(self.controller, "connexion reussie"))
                     self.controller.pagesEmploye["clients"].miseAjour()
                     self.controller.pagesEmploye["clients"].tkraise()
@@ -146,6 +150,7 @@ class ConnexionPage(ctk.CTkFrame):
                     self.controller.pagesPrimaire["contenu"].tkraise()
                     self.controller.title("client")
                     self.controller.pagesSecondaire["pageEmploye"].tkraise()
+                    self.viderChamp()
                 else:
                     self.controller.wait_window(erreur(self.controller, "connexion echouée"))
     
@@ -159,6 +164,10 @@ class ConnexionPage(ctk.CTkFrame):
     def miseAjour(self):
         if self.grid_info():
             self.controller.title("connexion")
+
+    def viderChamp(self):
+        self.userEntree.delete(0, ctk.END)
+        self.mpdEntree.delete(0, ctk.END) 
 
     
 

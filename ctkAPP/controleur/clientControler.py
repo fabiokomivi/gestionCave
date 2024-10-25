@@ -6,18 +6,15 @@ from sqlalchemy.exc import SQLAlchemyError
 
 def creerClient(employeId, nom, prenom, telephone, addresse):
     session = SessionLocal()
-    result=False
-    try:
-        session.add(Client(employeId=employeId, nom=nom, prenom=prenom, telephone=telephone, addresse=addresse))
-    except SQLAlchemyError as e:
-        result = False
-    else:
+    client = Client(employeId=employeId, nom=nom, prenom=prenom, telephone=telephone, addresse=addresse)
+    if client:
+        session.add(client)
         session.commit()
-        result = True
-    finally:
         session.close()
-        return result
-
+        return True
+    else:
+        session.close()
+        return False
 
 def obtenirClients():
     session = SessionLocal()
@@ -79,3 +76,8 @@ def supprimerClient(client_id):
         session.commit()  # Appliquer les changements dans la base de données
         session.close()  # Fermer la session
 
+def obtenirClientParEmploye(employerId):
+    session = SessionLocal()
+    clients = session.query(Client).filter(Client.employeId==employerId).all()
+    session.close()
+    return clients

@@ -5,6 +5,7 @@ from .formulaire.clientFormulaire import ClientForm
 from .formulaire.erreur.confirmation import Confirmation
 from controleur.clientControler import *
 from . formulaire.erreur.erreur import erreur
+from pages.journalisation.log import logs
 
 ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
@@ -13,7 +14,6 @@ class ClientPage(ctk.CTkFrame):
     clientAttribue = ("nom", "prenom", "telephone", "addresse")
     rechecheImagePath = "ctkAPP/images/recherche.png"
     reponse = {}
-    mode = ""
     listeClient = []
     autoriserSuppression = False
 
@@ -97,8 +97,7 @@ class ClientPage(ctk.CTkFrame):
 
 
     def ajouterClient(self):
-        self.mode = "ajout"
-        self.wait_window(ClientForm(self, self.avoirInfo,  {}, self.mode))
+        self.wait_window(ClientForm(self.controller, self.avoirInfo, {}, False))
         if self.reponse:
             if creerClient(employeId=self.controller.utilisateurCourant.id,
                         nom=self.reponse["nom"],
@@ -106,17 +105,18 @@ class ClientPage(ctk.CTkFrame):
                         telephone=self.reponse["telephone"],
                         addresse=self.reponse["addresse"]
                     ):
-                nouveau = obtenirClientparAttribue(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])
-                self.clientTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
+                nouveau = obtenirClientparAttribue(telephone=self.reponse["telephone"], addresse=self.reponse["addresse"])[0]
+                logs().logClient(nouveau,self.controller.utilisateurCourant)
+                self.clientTab.insert("", tk.END, iid=nouveau.id,values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
 
 
     def modifierClient(self):
         selection = self.clientTab.selection()
         if selection:
-            self.mode = "modification"
             attribues = self.clientTab.item(selection)["values"]
             client = {"id":int(selection[0]), "nom": attribues[0], "prenom": attribues[1], "telephone": attribues[2], "addresse": attribues[3]}
-            self.wait_window(ClientForm(self, self.avoirInfo,  client, self.mode))
+            ancienClient = obtenirClientparAttribue(clientId=selection[0])
+            self.wait_window(ClientForm(self.controller, self.avoirInfo,  client, True))
             if self.reponse:
                 if modifierClient(client_id=eval(selection[0]),
                             nom=self.reponse["nom"],
@@ -124,6 +124,8 @@ class ClientPage(ctk.CTkFrame):
                             telephone=self.reponse["telephone"],
                             addresse=self.reponse["addresse"]
                 ):
+                    nouveauClient = obtenirClientparAttribue(clientId=selection[0])
+                    logs().logClient(nouveauClient, self.controller.utilisateurCourant, ancienClient, mode=2)
                     self.clientTab.item(selection, values=(self.reponse["nom"], self.reponse["prenom"], self.reponse["telephone"], self.reponse["addresse"]))
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun client"))
@@ -143,16 +145,4 @@ class ClientPage(ctk.CTkFrame):
 
     def demandeAutorisation(self, permission):
         self.autoriserSuppression = permission
-
-
-    """def supprimer(self):
-        selection=self.clientTab.selection()
-        if selection:
-            message = "cette action supprimera toutes\nles commandes associees"
-            self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
-            if self.autoriserSuppression:
-                if supprimerClient(selection[0]):
-                    self.clientTab.delete(selection)
-        else:
-            self.controller.wait_window(erreur(self.controller, "veuillez choisir\nun client"))"""
 

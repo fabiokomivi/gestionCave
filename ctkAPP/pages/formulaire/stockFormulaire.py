@@ -15,6 +15,7 @@ class stockForm(ctk.CTkToplevel):
         self.resizable(False, False)
         self.centreFenetre()
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
 
         self.callback=callback
 

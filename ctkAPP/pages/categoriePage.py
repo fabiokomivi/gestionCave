@@ -5,13 +5,14 @@ from .formulaire.categorieFormulaire import categorieForm
 from .formulaire.erreur.confirmation import Confirmation
 from .formulaire.erreur.erreur import erreur
 from controleur.categorieControler import *
+from pages.journalisation.log import logs
 
-ctk.set_default_color_theme("/home/fabio/Bureau/python/appCTKenv/ctkAPP/themes/myBlue.json")  # Thème bleue
+ctk.set_default_color_theme("ctkAPP/themes/myBlue.json")  # Thème bleue
 
 class CategoriePage(ctk.CTkFrame):
 
     categorieAttribue = ("nom", "description")
-    rechecheImagePath = "/home/fabio/Bureau/python/appCTKenv/ctkAPP/images/recherche.png"
+    rechecheImagePath = "ctkAPP/images/recherche.png"
     reponse = {}
     mode = ""
     autoriserSuppression = False
@@ -106,6 +107,7 @@ class CategoriePage(ctk.CTkFrame):
                         description=self.reponse["description"]
                     ):
                 nouveau = obtenirCategorieParAttribue (nom=self.reponse["nom"], description=self.reponse["description"], tous=False, categorieId="")
+                logs().logCategorie(nouveau[0], self.controller.utilisateurCourant)
                 self.categorieTab.insert("", tk.END, iid=nouveau[0].id,values=(self.reponse["nom"], self.reponse["description"]))
 
 
@@ -116,22 +118,29 @@ class CategoriePage(ctk.CTkFrame):
             categorie = { "nom": attribues[0], "description": attribues[1]}
             self.wait_window(categorieForm(self.controller, self.avoirInfo,  categorie, mode=True))
             if self.reponse:
+                ancienCategorie = obtenirCategorieParAttribue(categorieId=selection[0])[0]
                 if modifierCategorie(categorieId=eval(selection[0]),
                             nom=self.reponse["nom"],
                             description=self.reponse["description"]
                 ):
                     self.categorieTab.item(selection, values=(self.reponse["nom"], self.reponse["description"]))
+                    nouvelleCategorie = obtenirCategorieParAttribue(categorieId=selection[0])[0]
+                    logs().logCategorie(ancienCategorie, self.controller.utilisateurCourant, nouvelleCategorie, mode=2)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune categorie"))
 
     def supprimerCategorie(self):
         selection=self.categorieTab.selection()
         if selection:
+            categorie = obtenirCategorieParAttribue(categorieId=selection[0])[0]
             message = "cette action supprimera toutes\nles boissons associees"
             self.wait_window(Confirmation(self.controller, message, self.demandeAutorisation))
             if self.autoriserSuppression:
                 supprimerCategorie(selection[0])
                 self.categorieTab.delete(selection[0])
+                logs().logCategorie(categorie, self.controller.utilisateurCourant, mode=3)
+                for boisson in categorie.boissons:
+                    logs().logBoisson(boisson, self.controller.utilisateurCourant, mode=3)
         else:
             self.controller.wait_window(erreur(self.controller, "veuillez choisir\nune categorie"))
 

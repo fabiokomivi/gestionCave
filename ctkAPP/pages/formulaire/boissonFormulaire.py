@@ -10,6 +10,7 @@ class boissonForm(ctk.CTkToplevel):
     patternNom = r"[a-zA-Z]+"
     patternPrix = r"[0-9]+"
     imageBinaire = ""
+    boissonDefautImage = "ctkAPP/images/boissonDefaut.png"
 
     def __init__(self, parent, callback, mode, categories,information):
         super().__init__(parent)
@@ -17,6 +18,7 @@ class boissonForm(ctk.CTkToplevel):
         self.resizable(False, False)
         self.centreFenetre()
         self.protocol("WM_DELETE_WINDOW", self.fermetureAnormale)
+        self.attributes('-topmost', True)
         self.callback=callback
         self.mode = mode
         self.information=information
@@ -40,7 +42,7 @@ class boissonForm(ctk.CTkToplevel):
         self.entreePrix = ctk.CTkEntry(topFrame, width=150, placeholder_text="prix")
         self.selecteur = ctk.CTkComboBox(topFrame, values=categories, width=150)
 
-        boutonValider = ctk.CTkButton(topFrame, text="selectionner", command=self.choisirImage)
+        boutonValider = ctk.CTkButton(topFrame, text="choisir une image", command=self.choisirImage)
         self.photoLabel.grid(column=0, row=0, rowspan=3, pady=10)
         self.entreeNom.grid(row=0, column=1, pady=10)
         self.entreePrix.grid(row=1, column=1)
@@ -58,6 +60,8 @@ class boissonForm(ctk.CTkToplevel):
             self.photoLabel.configure(image=information["image"])
             if information["categorie"] in self.selecteur._values:
                 self.selecteur.set(information["categorie"])
+        else:
+            self.selecteur.set((""))
         
         self.wait_visibility()
         self.grab_set()
@@ -66,27 +70,30 @@ class boissonForm(ctk.CTkToplevel):
     def verification(self):
         nom = self.entreeNom.get()
         prix = self.entreePrix.get()
-        categorie = self.selecteur.get()
+        categorie = self.selecteur.get().strip()
 
         if not re.match(self.patternNom, nom):
             self.rougir(self.entreeNom)
         elif not re.match(self.patternPrix, prix):
             self.rougir(self.entreePrix)
         else:
-            if self.mode:
+            if not self.mode:
                 boissons = obtenirBoissonParAttribue(tous=True)
                 for boisson in boissons:
-                    if boisson.id!=self.information["id"] and boisson.nom==nom:
+                    if boisson.nom==nom:
                         self.wait_window(erreur(self, "ce nom de boisson existe dejà"))
                         return
-                
+                if not self.imageBinaire:
+                    with open(self.boissonDefautImage, 'rb') as fichier:
+                        self.imageBinaire = fichier.read()
+
                 reponse = {"nom": nom, "prix": prix, "categorie": categorie, "image": self.imageBinaire}
                 self.callback(reponse)
                 self.destroy()
             else :
                 boissons = obtenirBoissonParAttribue(tous=True)
                 for boisson in boissons:
-                    if boisson.nom==nom:
+                    if boisson.nom==nom and boisson.id!=self.information["id"]:
                         self.wait_window(erreur(self, "ce nom de boisson existe dejà"))
                         return
                 reponse = {"nom": nom, "prix": prix, "categorie": categorie, "image": self.imageBinaire}
